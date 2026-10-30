@@ -194,13 +194,13 @@ noS:{2:'🤨 2 câu sai liền rồi đó, đang khởi động hả',3:'😭 3 
 let emoNew=null,stOk=0,stNo=0;const rnd=a=>a[Math.floor(Math.random()*a.length)];
 const RM=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 function emoHtml(ok){const m=rnd(ok?EMO.okM:EMO.noM),n=ok?stOk:stNo,st=(ok?EMO.okS:EMO.noS)[n];
- return '<div class="emo '+(ok?'ok':'no')+'"><span class="e">'+rnd(ok?EMO.ok:EMO.no)+'</span><div>'+esc(m[0])+'<span class="vi">'+esc(m[1])+'</span>'+(st?'<div class="emo-streak">'+esc(st)+'</div>':'')+'</div></div>'}
+ return '<div class="emo '+(ok?'ok':'no')+'"><span class="e">'+rnd(ok?EMO.ok:EMO.no)+'</span><div>'+esc(nb(m[0]))+'<span class="vi">'+esc(m[1])+'</span>'+(st?'<div class="emo-streak">'+esc(nb(st))+'</div>':'')+'</div></div>'}
 function confetti(){if(RM())return;const c=document.createElement('canvas');c.id='confetti';c.width=innerWidth;c.height=innerHeight;document.body.appendChild(c);const x=c.getContext('2d'),C=['#f43f5e','#f59e0b','#10b981','#3b82f6','#a855f7'];
  const P=Array.from({length:90},()=>({x:c.width/2,y:c.height/3,vx:(Math.random()-.5)*14,vy:Math.random()*-12-3,r:Math.random()*6+3,c:rnd(C)}));const t0=performance.now();
  (function f(t){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.vy+=.45;p.x+=p.vx;p.y+=p.vy;x.fillStyle=p.c;x.fillRect(p.x,p.y,p.r,p.r*.6)});if(t-t0<1100)requestAnimationFrame(f);else c.remove()})(t0)}
 function mockEmo(pct){const b=pct>=90?['👑','Điểm cao thế này chắc gian lận 😒 (đùa thôi, đi thi đi)']:pct>=72?['😏','Đậu rồi đó, flex nhẹ thôi kẻo mai cook 💅']:pct>=50?['🫠','Mãi đỉnh… đỉnh của sự lưng chừng, chưa đậu đâu']:pct>=30?['🍳','Hơi bị cook rồi bồ, Claude nhìn mà thương']:['🪦','Ét o ét! Điểm còn cái nịt, Anthropic khóc 🆘'];
- return '<div class="emo '+(pct>=72?'ok':'no')+'"><span class="e">'+b[0]+'</span><div>'+b[1]+'</div></div>'}
-function showPop(html){closePop();const d=document.createElement('div');d.id='emoPop';d.innerHTML=html;d.onclick=closePop;document.body.appendChild(d);popT=setTimeout(closePop,2500)}
+ return '<div class="emo '+(pct>=72?'ok':'no')+'"><span class="e">'+b[0]+'</span><div>'+esc(nb(b[1]))+'</div></div>'}
+const nb=s=>s.replace(/ (\S+)$/,'\u00a0$1');function showPop(html){closePop();const d=document.createElement('div');d.id='emoPop';d.innerHTML=html;d.onclick=closePop;document.body.appendChild(d);popT=setTimeout(closePop,5000)}
 function closePop(){clearTimeout(popT);const d=document.getElementById('emoPop');if(d)d.remove()}
 let popT,mockPop=false;addEventListener('keydown',e=>{if(e.key==='Escape')closePop()});
 function grade(){const q=cur();if(!q||!sel)return;const v=isMulti(q)?sel.v.slice():sel.v;s.guessed[q.id]=$('guess').checked;
