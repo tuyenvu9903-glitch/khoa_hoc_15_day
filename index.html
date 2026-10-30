@@ -200,7 +200,7 @@ function confetti(){if(RM())return;const c=document.createElement('canvas');c.id
  (function f(t){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.vy+=.45;p.x+=p.vx;p.y+=p.vy;x.fillStyle=p.c;x.fillRect(p.x,p.y,p.r,p.r*.6)});if(t-t0<1100)requestAnimationFrame(f);else c.remove()})(t0)}
 function mockEmo(pct){const b=pct>=90?['👑','Điểm cao thế này chắc gian lận 😒 (đùa thôi, đi thi đi)']:pct>=72?['😏','Đậu rồi đó, flex nhẹ thôi kẻo mai cook 💅']:pct>=50?['🫠','Mãi đỉnh… đỉnh của sự lưng chừng, chưa đậu đâu']:pct>=30?['🍳','Hơi bị cook rồi bồ, Claude nhìn mà thương']:['🪦','Ét o ét! Điểm còn cái nịt, Anthropic khóc 🆘'];
  return '<div class="emo '+(pct>=72?'ok':'no')+'"><span class="e">'+b[0]+'</span><div>'+esc(nb(b[1]))+'</div></div>'}
-const nb=s=>s.replace(/ (\S+)$/,'\u00a0$1');function showPop(html){closePop();const d=document.createElement('div');d.id='emoPop';d.innerHTML=html;d.onclick=closePop;document.body.appendChild(d);popT=setTimeout(closePop,5000)}
+const nb=s=>s.replace(/ (\S+)$/,'\u00a0$1');function showPop(html){closePop();const d=document.createElement('div');d.id='emoPop';d.innerHTML=html;d.onclick=closePop;document.body.appendChild(d);popT=setTimeout(closePop,4000)}
 function closePop(){clearTimeout(popT);const d=document.getElementById('emoPop');if(d)d.remove()}
 let popT,mockPop=false;addEventListener('keydown',e=>{if(e.key==='Escape')closePop()});
 function grade(){const q=cur();if(!q||!sel)return;const v=isMulti(q)?sel.v.slice():sel.v;s.guessed[q.id]=$('guess').checked;
