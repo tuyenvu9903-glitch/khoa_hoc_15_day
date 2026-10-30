@@ -85,6 +85,13 @@ table.ds{width:100%;border-collapse:collapse;font-size:14px}table.ds td,table.ds
 .why{font-size:14.5px;margin:4px 0}.guess{display:flex;gap:8px;align-items:center;margin-top:14px;font-size:14.5px}
 .grid{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}.grid button{padding:4px 0;width:36px;font-size:12px;box-shadow:none}.grid button.ans{background:var(--greenb)}.grid button.cur{outline:3px solid #fbbf24}
 #timer{font-weight:800;font-size:18px}
+.emo{margin:0 0 12px;padding:10px 14px;border-radius:12px;background:var(--card);font-weight:600;font-size:16px;display:flex;gap:10px;align-items:center}
+.emo .e{font-size:30px;display:inline-block}.emo .vi{margin-top:2px}
+.emo.ok .e{animation:pop .6s ease}.emo-streak{font-weight:700;margin-top:4px}
+@keyframes pop{0%{transform:scale(.3)}60%{transform:scale(1.35)}80%{transform:scale(.9)}100%{transform:scale(1)}}
+.option.shake{animation:shake .45s}@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:999}
+@media (prefers-reduced-motion:reduce){.emo .e,.option.shake{animation:none!important}}
 </style></head><body>
 <header><h1>CCAR-F Practice v4 — 15 ngày / 15-Day Study</h1><p>155 câu song ngữ · phân bổ theo trọng số domain · ôn lặp lại ngắt quãng · thi thử 60 câu</p><p class="notice">Bộ câu hỏi tự biên soạn để luyện tư duy — KHÔNG phải đề thi chính thức hoặc câu hỏi rò rỉ. Trọng số: D1 27% · D3 20% · D4 20% · D2 18% · D5 15%.</p></header>
 <main><aside class="panel"><h3 style="margin-top:0">Chọn ngày / Choose day</h3><div class="days" id="days"></div>
@@ -167,16 +174,31 @@ function render(){drawDays();stats();tabs();if(s.view==='stats')return drawStats
  $('pickHint').textContent=d?'':isMulti(q)?'· Chọn '+q.correct.length+' đáp án, tự chấm khi đủ ('+sel.v.length+'/'+q.correct.length+')':'· Bấm một phương án để chấm ngay';$('prev').disabled=s.index===0;$('next').disabled=s.index>=a.length-1;
  const f=$('feedback');if(!d){f.className='feedback hidden';return}
  const ok=eq(q,ansOf(q)),cl=isMulti(q)?q.correct.map(i=>L[i]).join(' + '):L[q.correct];
- let h='<h3>'+(ok?'✓ Chính xác!':'✗ Chưa đúng')+' — Đáp án: '+cl+'</h3><p><b>EN:</b> '+esc(q.explanationEn)+'</p><p class="vi-p"><b>VI:</b> '+esc(q.explanationVi)+'</p>';
+ const fresh=emoNew&&emoNew.id===q.id;let h=(fresh?emoHtml(ok):'')+'<h3>'+(ok?'✓ Chính xác!':'✗ Chưa đúng')+' — Đáp án: '+cl+'</h3><p><b>EN:</b> '+esc(q.explanationEn)+'</p><p class="vi-p"><b>VI:</b> '+esc(q.explanationVi)+'</p>';
  if(q.whyEn)h+='<p><b>Vì sao từng phương án / Why each option:</b></p>'+q.whyEn.map((w,i)=>'<p class="why"><b>'+L[i]+'.</b> '+esc(w)+'<span class="vi">'+esc(q.whyVi[i])+'</span></p>').join('');
  else h+='<p class="why"><i>Các phương án còn lại không đáp ứng yêu cầu chính của tình huống (vi phạm ràng buộc, thiếu xác minh hoặc kém tin cậy hơn).</i></p>';
  const r=s.srs[q.id];if(r)h+='<p class="muted">🔁 '+(r.mastered?'Đã thuộc (3 lần đúng liên tiếp ở các ngày khác nhau)':'Ôn lại: '+r.due+' · chuỗi đúng '+r.streak+'/3')+'</p>';
- f.innerHTML=h;f.className='feedback '+(ok?'ok':'no')}
+ f.innerHTML=h;f.className='feedback '+(ok?'ok':'no');if(fresh){const e=emoNew;emoNew=null;if(ok)confetti();else if(!RM()){const ch=Array.isArray(e.pick)?e.pick:[e.pick];document.querySelectorAll('#options .option').forEach((o,i)=>{if(ch.includes(i)&&!(Array.isArray(q.correct)?q.correct.includes(i):q.correct===i)){o.classList.add('shake');setTimeout(()=>o.classList.remove('shake'),500)}})}}}
+
+const EMO={ok:['🎉','👏','🔥','🌟','💯','😎'],no:['😅','🤔','💪','😏','🤡','😬','😂'],
+okM:[['Đúng à? Chắc chọn bừa thôi 😒','Lucky guess?'],['Thôi đừng flex nữa, lần sau sai là biết 😏','Stop flexing'],['Lại đúng, chán ghê, không có gì để cà khịa 🙄','Boring. Correct again'],['Ủa đúng thật hả? Xỉu ngang 😵','Wait, what?'],['Ao trình vừa thôi, để phần người khác với 🙄','Show-off'],['Kiến trúc sư đá đểm đây chứ đâu 😎','Fancy architect'],['Mãi đỉnh… nói thế thôi chứ đừng tưởng bở 😌','Don\'t get cocky'],['Đúng nhưng nhìn mặt vẫn thấy gian gian 🤨','Suspicious…'],['Out trình rồi đó, nhưng đừng có kiêu 💅','Out of league'],['Ok đúng, cho 1 điểm, không có thêm cái nịt nào đâu 😤','One point, that\'s it'],['Chặt chém ghê, Claude hơi bị sợ rồi đó 😨','Ruthless'],['Đúng rồi đó, nhưng đừng nghĩ mình là Opus 🙄','Calm down']],
+noM:[['Đỉnh thế, sai đẹp chưa từng thấy 👏🤡','Beautifully wrong'],['Xuất sắc, Claude xin nhận bạn làm bug 😭','Bug-level genius'],['Trình này đi thi chắc đỗ... đỗ trượt 😌','Surely passing… not'],['Ét o ét! Điểm còn cái nịt 🆘','SOS'],['Hơi bị cook rồi đó bồ 🍳','You\'re cooked'],['Tự tin ghê, sai cũng phải sai cho sang 💅','Confidently wrong'],['Thiên tài hallucinate, Claude phải học hỏi 🌀','Hallucination master'],['Đoán mò mà sai thì thôi, lộ rồi nhé 🤡','Caught guessing'],['Ao trình quá, chọn đúng cái sai luôn 👏','Precision… wrong'],['Kiến trúc sư đá đểm, xây nhà toàn bug 🏚️','Buggy architect'],['Xỉu, đáp án đúng nằm ngay bên cạnh mà 😵','It was right there'],['Giỏi lắm, đọc giải thích đi rồi flex tiếp 😏','Read the explanation!']],
+okS:{3:'🙄 3 câu đúng liên tiếp, flex hoài, đáng ghét ghê',5:'😒 5 câu liền? Hack à? Khai thật đi',10:'🫡 10 câu liên tiếp, thôi out trình rồi, chịu luôn'},
+noS:{3:'😭 3 câu sai liên tiếp, Anthropic đang khóc… vì tự hào',5:'🍳 5 câu sai liền, cook chín luôn rồi, mãi đỉnh 👏',10:'🪦 10 câu sai liên tiếp, kỷ lục! Còn cái nịt 🆘'}};
+let emoNew=null,stOk=0,stNo=0;const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const RM=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function emoHtml(ok){const m=rnd(ok?EMO.okM:EMO.noM),n=ok?stOk:stNo,st=(ok?EMO.okS:EMO.noS)[n];
+ return '<div class="emo '+(ok?'ok':'no')+'"><span class="e">'+rnd(ok?EMO.ok:EMO.no)+'</span><div>'+esc(m[0])+'<span class="vi">'+esc(m[1])+'</span>'+(st?'<div class="emo-streak">'+esc(st)+'</div>':'')+'</div></div>'}
+function confetti(){if(RM())return;const c=document.createElement('canvas');c.id='confetti';c.width=innerWidth;c.height=innerHeight;document.body.appendChild(c);const x=c.getContext('2d'),C=['#f43f5e','#f59e0b','#10b981','#3b82f6','#a855f7'];
+ const P=Array.from({length:90},()=>({x:c.width/2,y:c.height/3,vx:(Math.random()-.5)*14,vy:Math.random()*-12-3,r:Math.random()*6+3,c:rnd(C)}));const t0=performance.now();
+ (function f(t){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.vy+=.45;p.x+=p.vx;p.y+=p.vy;x.fillStyle=p.c;x.fillRect(p.x,p.y,p.r,p.r*.6)});if(t-t0<1100)requestAnimationFrame(f);else c.remove()})(t0)}
+function mockEmo(pct){const b=pct>=85?['🏆','Điểm cao thế này chắc gian lận 😒 (đùa thôi, đi thi đi)']:pct>=72?['🎉','Đậu rồi đó, flex nhẹ thôi kẻo cook 💅']:pct>=50?['😏','Mãi đỉnh… đỉnh của sự lưng chừng 😏']:pct>=30?['😬','Hơi bị cook rồi bồ ơi, đọc lại giải thích 🍳']:['😭','Ét o ét! Điểm còn cái nịt, Anthropic khóc 🆘'];
+ return '<div class="emo '+(pct>=72?'ok':'no')+'"><span class="e">'+b[0]+'</span><div>'+b[1]+'</div></div>'}
 function grade(){const q=cur();if(!q||!sel)return;const v=isMulti(q)?sel.v.slice():sel.v;s.guessed[q.id]=$('guess').checked;
  if(s.view==='review')rev[q.id]=v;else{s.answers[q.id]=v;s.checked[q.id]=true}
- srsUpdate(q,eq(q,v));save();if(s.view==='review'){const keep=q;render();}else render()}
-$('prev').onclick=()=>{s.index--;sel=null;save();render()};
-$('next').onclick=()=>{s.index++;sel=null;save();render()};
+ {const g=eq(q,v);if(g){stOk++;stNo=0}else{stNo++;stOk=0}emoNew={id:q.id,ok:g,pick:v}}srsUpdate(q,eq(q,v));save();if(s.view==='review'){const keep=q;render();}else render()}
+$('prev').onclick=()=>{emoNew=null;s.index--;sel=null;save();render()};
+$('next').onclick=()=>{emoNew=null;s.index++;sel=null;save();render()};
 $('guess').onchange=()=>{};
 
 function drawStats(){const D=['D1','D2','D3','D4','D5'];let h='<h2 style="margin-top:0">📊 Thống kê theo domain</h2><table class="ds"><tr><th>Domain</th><th>Đã làm</th><th>Đúng (chắc)</th><th>Đúng nhờ đoán</th><th>Sai</th><th>Chính xác</th></tr>';
@@ -203,7 +225,7 @@ function submitMock(auto){const m=s.mock;if(!m||m.submitted)return;clearInterval
 function drawMock(){const v=$('mockView'),m=s.mock;clearInterval(tick);
  if(!m){const hist=(s.mockHist||[]);v.innerHTML='<h2 style="margin-top:0">⏱️ Thi thử 60 câu / 120 phút</h2><p>Rút 60 câu từ ngân hàng 155 câu theo trọng số Exam Guide (D1 27% · D3 20% · D4 20% · D2 18% · D5 15%): D1 16 · D3 12 · D4 12 · D2 11 · D5 9. Không hiện đáp án cho tới khi nộp bài; hết giờ tự nộp.</p><p><label><input type="checkbox" id="mockMulti"'+(s.mockMulti?' checked':'')+'> Gồm cả câu “chọn 2” (Exam Guide chính thức v0.1 nói mọi câu chỉ có 1 đáp án đúng — mặc định TẮT)</label></p><p class="muted">⚠️ 60 câu / 120 phút theo nguồn bên thứ ba, chưa xác nhận trong PDF chính thức.</p>'+(hist.length?'<p class="muted">Lần thi trước: '+hist.slice(-5).map(x=>x.date+' '+x.ok+'/'+x.n).join(' · ')+'</p>':'')+'<button id="mockStart">Bắt đầu thi thử</button>';$('mockStart').onclick=startMock;$('mockMulti').onchange=e=>{s.mockMulti=e.target.checked;save()};return}
  if(m.submitted){const ok=m.ids.filter(id=>eq(byId[id],m.ans[id])).length,by={};m.ids.forEach(id=>{const q=byId[id];by[q.domain]=by[q.domain]||[0,0];by[q.domain][1]++;if(eq(q,m.ans[id]))by[q.domain][0]++});
-  let h='<h2 style="margin-top:0">Kết quả: '+ok+' / '+m.ids.length+' ('+Math.round(ok/m.ids.length*100)+'%)'+(m.auto?' · ⏰ tự nộp khi hết giờ':'')+'</h2><p class="muted">Thời gian: '+Math.round((m.end-m.start)/60000)+' phút · Câu sai/bỏ trống đã được đưa vào lịch ôn (Ôn hôm nay).</p><table class="ds"><tr><th>Domain</th><th>Đúng</th><th>%</th></tr>'+Object.keys(MW).filter(d=>by[d]).map(d=>'<tr><td>'+d+'</td><td>'+by[d][0]+'/'+by[d][1]+'</td><td>'+Math.round(by[d][0]/by[d][1]*100)+'%</td></tr>').join('')+'</table>';
+  let h=mockEmo(Math.round(ok/m.ids.length*100))+'<h2 style="margin-top:0">Kết quả: '+ok+' / '+m.ids.length+' ('+Math.round(ok/m.ids.length*100)+'%)'+(m.auto?' · ⏰ tự nộp khi hết giờ':'')+'</h2><p class="muted">Thời gian: '+Math.round((m.end-m.start)/60000)+' phút · Câu sai/bỏ trống đã được đưa vào lịch ôn (Ôn hôm nay).</p><table class="ds"><tr><th>Domain</th><th>Đúng</th><th>%</th></tr>'+Object.keys(MW).filter(d=>by[d]).map(d=>'<tr><td>'+d+'</td><td>'+by[d][0]+'/'+by[d][1]+'</td><td>'+Math.round(by[d][0]/by[d][1]*100)+'%</td></tr>').join('')+'</table>';
   h+='<h3>Xem lại</h3>'+m.ids.map((id,k)=>{const q=byId[id],a=m.ans[id],good=eq(q,a),fm=x=>x==null||(Array.isArray(x)&&!x.length)?'—':Array.isArray(x)?x.map(i=>L[i]).join('+'):L[x];
    const C=i=>isMulti(q)?q.correct.includes(i):q.correct===i,P=i=>Array.isArray(a)?a.includes(i):a===i;
    const ex=s.mode==='vi'?esc(q.explanationVi):s.mode==='en'?esc(q.explanationEn):esc(q.explanationEn)+'<span class="vi">'+esc(q.explanationVi)+'</span>';
