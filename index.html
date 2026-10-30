@@ -95,7 +95,7 @@ table.ds{width:100%;border-collapse:collapse;font-size:14px}table.ds td,table.ds
 #emoPop{position:fixed;inset:0;z-index:998;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.35)}
 #emoPop .emo{flex-direction:column;text-align:center;max-width:min(440px,88vw);padding:26px 28px;font-size:24px;margin:0;cursor:pointer;animation:popin .4s cubic-bezier(.2,1.4,.4,1)}
 #emoPop .emo.ok{color:var(--greent);border-color:var(--greenb)}#emoPop .emo.no{color:var(--redt);border-color:var(--redb)}
-#emoPop .e{font-size:84px}#emoPop .vi{font-size:15px;border:0;padding:0;display:block!important}#emoPop .vi::before{display:none}
+#emoPop .e{font-size:84px}#emoPop .meme{height:150px;max-width:100%;border-radius:12px;object-fit:cover;background:#0001}#emoPop .vi{font-size:15px;border:0;padding:0;display:block!important}#emoPop .vi::before{display:none}
 @keyframes popin{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion:reduce){#emoPop .emo{animation:none!important}}
 </style></head><body>
@@ -197,13 +197,20 @@ okS:{3:'🙄 3 câu liền, flex hoài, đáng ghét ghê',5:'🕵️ 5 câu li�
 noS:{2:'🤨 2 câu sai liền rồi đó, đang khởi động hả',3:'😭 3 câu sai liền, Anthropic khóc… vì tự hào',5:'🪦 5 câu sai liền, cook chín, xin một phút mặc niệm 🍳'}};
 let emoNew=null,stOk=0,stNo=0;const rnd=a=>a[Math.floor(Math.random()*a.length)];
 const RM=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Reaction memes: hotlinked from GIPHY media CDN (not rehosted); fallback -> Noto Animated Emoji (Apache-2.0, Google CDN) -> plain emoji
+const MEME={no:['2UCt7zbmsLoCXybx6t','XD4qHZpkyUFfq','26FPzgftlRfgwkEw0','hyyV7pnbE0FqLNBAzs','zDZuCT6s4Eijdicayx','l1Ku0ezbGyA8MSyd2','nLGZJL5TGaquA','xUPGcnKQMOZTnZi4yk','3ohs7KViF6rA4aan5u','D8qJlXpO3MVccXZ9mA','UyJwO6grNgMKmeBHeA'],
+coffin:['j6ZlX8ghxNFRknObVk','mEVIKh1NjoVbivKlvZ'],
+ok:['ZIHPcum8vBonMjJSoM','Wwn5NKv4At2CIc8XQa','gRxjhVNfFgqI0','t9lBEE2FGMzbY9s5IX','lkbNG2zqzHZUA','xRJZH4Ajr973y','26gN12uxpyl82bgju','DQ4Wm6vGmkVl2dftps','jzWdKhCwpvNh5qE80q','HyKsYnUAlRfD8cJd6S','l41m04gr7tRet7Uas','MaDxZqu34zYkosul78'],
+noto:{ok:['1f60e','1f973','1f525','1fae1','1f644','1f60f'],no:['1f480','1f921','1fae0','1f62d','1f62c','1f635']}};
+function memeFail(img){const st=+img.dataset.st||0;if(st===0){img.dataset.st=1;img.src='https://fonts.gstatic.com/s/e/notoemoji/latest/'+img.dataset.noto+'/512.webp'}else{const e=document.createElement('span');e.className='e';e.textContent=img.dataset.emo;img.replaceWith(e)}}
+function memeImg(ok,emo,coffin){const id=rnd(coffin?MEME.coffin:ok?MEME.ok:MEME.no);return '<img class="meme" alt="" referrerpolicy="no-referrer" src="https://media.giphy.com/media/'+id+'/200w.webp" data-noto="'+rnd(MEME.noto[ok?'ok':'no'])+'" data-emo="'+emo+'" onerror="memeFail(this)">'}
 function emoHtml(ok,noSt){const m=rnd(ok?EMO.okM:EMO.noM),n=noSt?0:ok?stOk:stNo,st=(ok?EMO.okS:EMO.noS)[n];
- return '<div class="emo '+(ok?'ok':'no')+'"><span class="e">'+rnd(ok?EMO.ok:EMO.no)+'</span><div>'+esc(nb(m[0]))+'<span class="vi">'+esc(m[1])+'</span>'+(st?'<div class="emo-streak">'+esc(nb(st))+'</div>':'')+'</div></div>'}
+ return '<div class="emo '+(ok?'ok':'no')+'">'+memeImg(ok,rnd(ok?EMO.ok:EMO.no),!ok&&n>=3)+'<div>'+esc(nb(m[0]))+'<span class="vi">'+esc(m[1])+'</span>'+(st?'<div class="emo-streak">'+esc(nb(st))+'</div>':'')+'</div></div>'}
 function confetti(){if(RM())return;const c=document.createElement('canvas');c.id='confetti';c.width=innerWidth;c.height=innerHeight;document.body.appendChild(c);const x=c.getContext('2d'),C=['#f43f5e','#f59e0b','#10b981','#3b82f6','#a855f7'];
  const P=Array.from({length:90},()=>({x:c.width/2,y:c.height/3,vx:(Math.random()-.5)*14,vy:Math.random()*-12-3,r:Math.random()*6+3,c:rnd(C)}));const t0=performance.now();
  (function f(t){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.vy+=.45;p.x+=p.vx;p.y+=p.vy;x.fillStyle=p.c;x.fillRect(p.x,p.y,p.r,p.r*.6)});if(t-t0<1100)requestAnimationFrame(f);else c.remove()})(t0)}
 function mockEmo(pct){const b=pct>=90?['👑','Điểm cao thế này chắc gian lận 😒 (đùa thôi, đi thi đi)']:pct>=72?['😏','Đậu rồi đó, flex nhẹ thôi kẻo mai cook 💅']:pct>=50?['🫠','Mãi đỉnh… đỉnh của sự lưng chừng, chưa đậu đâu']:pct>=30?['🍳','Hơi bị cook rồi bồ, Claude nhìn mà thương']:['🪦','Ét o ét! Điểm còn cái nịt, Anthropic khóc 🆘'];
- return '<div class="emo '+(pct>=72?'ok':'no')+'"><span class="e">'+b[0]+'</span><div>'+esc(nb(b[1]))+'</div></div>'}
+ return '<div class="emo '+(pct>=72?'ok':'no')+'">'+memeImg(pct>=72,b[0],pct<30)+'<div>'+esc(nb(b[1]))+'</div></div>'}
 const nb=s=>s.replace(/ (\S+)$/,'\u00a0$1');function showPop(html){closePop();const d=document.createElement('div');d.id='emoPop';d.innerHTML=html;d.onclick=closePop;document.body.appendChild(d);popT=setTimeout(closePop,4000)}
 function closePop(){clearTimeout(popT);const d=document.getElementById('emoPop');if(d)d.remove()}
 let popT,mockPop=false;addEventListener('keydown',e=>{if(e.key==='Escape')closePop()});
