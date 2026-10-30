@@ -1,8 +1,11 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CCAR-F — 155 câu / 15 ngày</title>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800&display=swap" rel="stylesheet"><style>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&subset=vietnamese&display=swap" rel="stylesheet"><style>
 :root{color-scheme:light dark;--bg:#f3f5fb;--card:#fff;--ink:#1b2438;--muted:#64708a;--line:#e1e6f0;--blue:#4f46e5;--blue2:#3b82f6;--pale:#eef0ff;--green:#ecfdf3;--greenb:#16a34a;--greent:#14532d;--red:#fff1f1;--redb:#dc2626;--redt:#7f1d1d;--shadow:0 6px 24px rgba(30,41,90,.08);--soft:#f7f8fc}
 @media(prefers-color-scheme:dark){:root{--bg:#0e1322;--card:#171e33;--ink:#e8ecf8;--muted:#9aa6c4;--line:#2a3350;--blue:#818cf8;--blue2:#60a5fa;--pale:#232c52;--green:#10281b;--greenb:#34d399;--greent:#b7f5d3;--red:#33161a;--redb:#f87171;--redt:#fecaca;--shadow:0 6px 24px rgba(0,0,0,.4);--soft:#1d2540}}
 *{box-sizing:border-box}
+button,input,select,textarea{font-family:inherit}
+code,pre,kbd{font-family:ui-monospace,Menlo,Consolas,"Be Vietnam Pro","Noto Sans Mono",monospace}
+.vi,.vietnamese,em,i{font-synthesis:none}
 body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 "Be Vietnam Pro","Inter","Noto Sans","Segoe UI",Roboto,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 header{background:linear-gradient(120deg,#312e81 0%,#4f46e5 55%,#3b82f6 100%);color:#fff;padding:30px max(18px,calc((100% - 1120px)/2)) 34px;box-shadow:0 4px 20px rgba(49,46,129,.35)}
 h1{font-size:clamp(24px,4vw,34px);margin:0 0 6px;letter-spacing:-.02em;line-height:1.2}
@@ -36,7 +39,7 @@ select:focus,button:focus-visible,.option:focus-within{outline:3px solid color-m
 #status{font-size:13px;padding:4px 12px;border-radius:99px;background:var(--soft);border:1px solid var(--line)}
 #status.isdone{background:var(--green);border-color:var(--greenb);color:var(--greent)}
 .card h2{font-size:22px;line-height:1.45;margin:16px 0 12px;font-weight:700;letter-spacing:-.01em}
-.vietnamese{padding:12px 16px;background:var(--soft);border-left:4px solid var(--blue);border-radius:4px 12px 12px 4px;color:var(--muted);font-size:15.5px;font-style:italic;margin:0 0 20px}
+.vietnamese{padding:12px 16px;background:var(--soft);border-left:4px solid var(--blue);border-radius:4px 12px 12px 4px;color:var(--muted);font-size:15.5px;font-style:normal;margin:0 0 20px}
 .option{display:flex;gap:14px;align-items:flex-start;border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin:10px 0;cursor:pointer;background:var(--card);transition:.15s}
 .option:hover{border-color:var(--blue);background:var(--pale);transform:translateX(2px)}
 .option.selected{background:var(--pale);border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 18%,transparent)}
@@ -45,7 +48,7 @@ select:focus,button:focus-visible,.option:focus-within{outline:3px solid color-m
 .option.selected .badge{background:var(--blue);border-color:var(--blue);color:#fff}
 .option .txt{flex:1;min-width:0}
 .option .txt>span:first-child{display:block;font-size:17px;line-height:1.5}
-.option .vi{display:block;color:var(--muted);font-size:14.5px;margin-top:5px;font-style:italic}
+.option .vi{display:block;color:var(--muted);font-size:14.5px;margin-top:5px;font-style:normal}
 .option.correct{background:var(--green);border-color:var(--greenb);box-shadow:none}
 .option.correct .badge{background:var(--greenb);border-color:var(--greenb);color:#fff}
 .option.wrong{background:var(--red);border-color:var(--redb);box-shadow:none}
