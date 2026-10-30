@@ -1,7 +1,7 @@
 <!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CCAR-F — 155 câu / 15 ngày</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&subset=vietnamese&display=swap" rel="stylesheet"><style>
-:root{color-scheme:light dark;--bg:#f3f5fb;--card:#fff;--ink:#1b2438;--muted:#64708a;--line:#e1e6f0;--blue:#4f46e5;--blue2:#3b82f6;--pale:#eef0ff;--green:#ecfdf3;--greenb:#16a34a;--greent:#14532d;--red:#fff1f1;--redb:#dc2626;--redt:#7f1d1d;--shadow:0 6px 24px rgba(30,41,90,.08);--soft:#f7f8fc}
-@media(prefers-color-scheme:dark){:root{--bg:#0e1322;--card:#171e33;--ink:#e8ecf8;--muted:#9aa6c4;--line:#2a3350;--blue:#818cf8;--blue2:#60a5fa;--pale:#232c52;--green:#10281b;--greenb:#34d399;--greent:#b7f5d3;--red:#33161a;--redb:#f87171;--redt:#fecaca;--shadow:0 6px 24px rgba(0,0,0,.4);--soft:#1d2540}}
+:root{color-scheme:light dark;--bg:#f3f5fb;--card:#fff;--ink:#1b2438;--muted:#64708a;--line:#e1e6f0;--blue:#4f46e5;--blue2:#3b82f6;--pale:#eef0ff;--green:#ecfdf3;--greenb:#16a34a;--greent:#14532d;--red:#fff1f1;--redb:#dc2626;--redt:#7f1d1d;--shadow:0 6px 24px rgba(30,41,90,.08);--soft:#f7f8fc;--vi:#0f6e8c}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1322;--card:#171e33;--ink:#e8ecf8;--muted:#9aa6c4;--line:#2a3350;--blue:#818cf8;--blue2:#60a5fa;--pale:#232c52;--green:#10281b;--greenb:#34d399;--greent:#b7f5d3;--red:#33161a;--redb:#f87171;--redt:#fecaca;--shadow:0 6px 24px rgba(0,0,0,.4);--soft:#1d2540;--vi:#6fd3ea}}
 *{box-sizing:border-box}
 button,input,select,textarea{font-family:inherit}
 code,pre,kbd{font-family:ui-monospace,Menlo,Consolas,"Be Vietnam Pro","Noto Sans Mono",monospace}
@@ -39,7 +39,7 @@ select:focus,button:focus-visible,.option:focus-within{outline:3px solid color-m
 #status{font-size:13px;padding:4px 12px;border-radius:99px;background:var(--soft);border:1px solid var(--line)}
 #status.isdone{background:var(--green);border-color:var(--greenb);color:var(--greent)}
 .card h2{font-size:22px;line-height:1.45;margin:16px 0 12px;font-weight:700;letter-spacing:-.01em}
-.vietnamese{padding:12px 16px;background:var(--soft);border-left:4px solid var(--blue);border-radius:4px 12px 12px 4px;color:var(--muted);font-size:15.5px;font-style:normal;margin:0 0 20px}
+.vietnamese{padding:12px 16px;background:var(--soft);border-left:3px solid var(--vi);border-radius:4px 12px 12px 4px;color:var(--vi);font-size:15.5px;font-style:normal;margin:0 0 20px}
 .option{display:flex;gap:14px;align-items:flex-start;border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin:10px 0;cursor:pointer;background:var(--card);transition:.15s}
 .option:hover{border-color:var(--blue);background:var(--pale);transform:translateX(2px)}
 .option.selected{background:var(--pale);border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 18%,transparent)}
@@ -48,7 +48,11 @@ select:focus,button:focus-visible,.option:focus-within{outline:3px solid color-m
 .option.selected .badge{background:var(--blue);border-color:var(--blue);color:#fff}
 .option .txt{flex:1;min-width:0}
 .option .txt>span:first-child{display:block;font-size:17px;line-height:1.5}
-.option .vi{display:block;color:var(--muted);font-size:14.5px;margin-top:5px;font-style:normal}
+.option .vi{display:block;color:var(--vi);font-size:.92em;margin-top:5px;font-style:normal;border-left:3px solid var(--vi);padding-left:8px}
+.vi::before,.vietnamese::before{content:'VI';display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;padding:0 4px;margin-right:6px;border-radius:4px;background:var(--vi);color:var(--card);vertical-align:2px}
+.vi-p{color:var(--vi);border-left:3px solid var(--vi);padding-left:8px;font-size:.95em}
+.feedback .vi,.feedback .vi-p{color:var(--vi)}
+.why .vi,.feedback .vi{display:block!important;margin-top:3px}
 .option.correct{background:var(--green);border-color:var(--greenb);box-shadow:none}
 .option.correct .badge{background:var(--greenb);border-color:var(--greenb);color:#fff}
 .option.wrong{background:var(--red);border-color:var(--redb);box-shadow:none}
@@ -163,8 +167,8 @@ function render(){drawDays();stats();tabs();if(s.view==='stats')return drawStats
  $('pickHint').textContent=d?'':isMulti(q)?'· Chọn '+q.correct.length+' đáp án, tự chấm khi đủ ('+sel.v.length+'/'+q.correct.length+')':'· Bấm một phương án để chấm ngay';$('prev').disabled=s.index===0;$('next').disabled=s.index>=a.length-1;
  const f=$('feedback');if(!d){f.className='feedback hidden';return}
  const ok=eq(q,ansOf(q)),cl=isMulti(q)?q.correct.map(i=>L[i]).join(' + '):L[q.correct];
- let h='<h3>'+(ok?'✓ Chính xác!':'✗ Chưa đúng')+' — Đáp án: '+cl+'</h3><p><b>EN:</b> '+esc(q.explanationEn)+'</p><p><b>VI:</b> '+esc(q.explanationVi)+'</p>';
- if(q.whyEn)h+='<p><b>Vì sao từng phương án / Why each option:</b></p>'+q.whyEn.map((w,i)=>'<p class="why"><b>'+L[i]+'.</b> '+esc(w)+'<br><i>'+esc(q.whyVi[i])+'</i></p>').join('');
+ let h='<h3>'+(ok?'✓ Chính xác!':'✗ Chưa đúng')+' — Đáp án: '+cl+'</h3><p><b>EN:</b> '+esc(q.explanationEn)+'</p><p class="vi-p"><b>VI:</b> '+esc(q.explanationVi)+'</p>';
+ if(q.whyEn)h+='<p><b>Vì sao từng phương án / Why each option:</b></p>'+q.whyEn.map((w,i)=>'<p class="why"><b>'+L[i]+'.</b> '+esc(w)+'<span class="vi">'+esc(q.whyVi[i])+'</span></p>').join('');
  else h+='<p class="why"><i>Các phương án còn lại không đáp ứng yêu cầu chính của tình huống (vi phạm ràng buộc, thiếu xác minh hoặc kém tin cậy hơn).</i></p>';
  const r=s.srs[q.id];if(r)h+='<p class="muted">🔁 '+(r.mastered?'Đã thuộc (3 lần đúng liên tiếp ở các ngày khác nhau)':'Ôn lại: '+r.due+' · chuỗi đúng '+r.streak+'/3')+'</p>';
  f.innerHTML=h;f.className='feedback '+(ok?'ok':'no')}
@@ -202,7 +206,7 @@ function drawMock(){const v=$('mockView'),m=s.mock;clearInterval(tick);
   let h='<h2 style="margin-top:0">Kết quả: '+ok+' / '+m.ids.length+' ('+Math.round(ok/m.ids.length*100)+'%)'+(m.auto?' · ⏰ tự nộp khi hết giờ':'')+'</h2><p class="muted">Thời gian: '+Math.round((m.end-m.start)/60000)+' phút · Câu sai/bỏ trống đã được đưa vào lịch ôn (Ôn hôm nay).</p><table class="ds"><tr><th>Domain</th><th>Đúng</th><th>%</th></tr>'+Object.keys(MW).filter(d=>by[d]).map(d=>'<tr><td>'+d+'</td><td>'+by[d][0]+'/'+by[d][1]+'</td><td>'+Math.round(by[d][0]/by[d][1]*100)+'%</td></tr>').join('')+'</table>';
   h+='<h3>Xem lại</h3>'+m.ids.map((id,k)=>{const q=byId[id],a=m.ans[id],good=eq(q,a),fm=x=>x==null||(Array.isArray(x)&&!x.length)?'—':Array.isArray(x)?x.map(i=>L[i]).join('+'):L[x];
    const C=i=>isMulti(q)?q.correct.includes(i):q.correct===i,P=i=>Array.isArray(a)?a.includes(i):a===i;
-   const ex=s.mode==='vi'?esc(q.explanationVi):s.mode==='en'?esc(q.explanationEn):esc(q.explanationEn)+'<br><i>'+esc(q.explanationVi)+'</i>';
+   const ex=s.mode==='vi'?esc(q.explanationVi):s.mode==='en'?esc(q.explanationEn):esc(q.explanationEn)+'<span class="vi">'+esc(q.explanationVi)+'</span>';
    return '<div class="feedback mrev '+(good?'ok':'no')+'"><b>'+(k+1)+'. ['+q.domain+' · Guide '+q.ts+' · '+esc(q.kw)+']</b> '+mt(q.qEn,q.qVi,'result')+'<div>'+q.optionsEn.map((t,i)=>'<p class="why'+(C(i)?' rc':'')+(P(i)&&!C(i)?' rw':'')+'"><b>'+L[i]+'.</b> '+(C(i)?'✓ ':P(i)?'✗ ':'')+mt(t,q.optionsVi[i],'result')+(q.whyEn?'<br><small>'+mt(q.whyEn[i],q.whyVi[i],'result')+'</small>':'')+'</p>').join('')+'</div>Bạn chọn: <b>'+fm(a)+'</b> · Đáp án: <b>'+fm(q.correct)+'</b><br>'+ex+'</div>'}).join('');
   h+='<div class="actions"><button id="mockNew">Thi lại</button><button class="secondary" id="mockClear">Đóng</button></div>';v.innerHTML=h;$('mockNew').onclick=startMock;$('mockClear').onclick=()=>{s.mock=null;save();render()};return}
  const left=()=>Math.max(0,m.start+MOCK_MS-Date.now());if(!left())return submitMock(true);
