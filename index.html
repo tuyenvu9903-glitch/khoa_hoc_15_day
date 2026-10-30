@@ -129,7 +129,7 @@ const byId={};Q.forEach(q=>byId[q.id]=q);
 const isMulti=q=>Array.isArray(q.correct);
 const eq=(q,a)=>{if(a==null)return false;if(isMulti(q))return Array.isArray(a)&&a.length===q.correct.length&&a.slice().sort().join()===q.correct.slice().sort().join();return a===q.correct};
 let s;
-function blank(){return{day:1,index:0,answers:{},checked:{},guessed:{},srs:{},mode:'enfirst',domain:'all',view:'study',mock:null,mockHist:[],mockMulti:false,bank5:true}}
+function blank(){return{day:1,index:0,answers:{},checked:{},guessed:{},srs:{},mode:'enfirst',domain:'all',view:'study',mock:null,mockHist:[],mockMulti:false,bank5:true,rev:{},revIds:null,qord:{},oord:{}}}
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v){const r=Object.assign(blank(),v);normSrs(r);if(!v.bank5){REW.forEach(id=>{delete r.answers[id];delete r.checked[id];delete r.guessed[id];delete r.srs[id]});if(r.mock&&!r.mock.submitted)r.mock=null;r.bank5=true}return r}}catch(e){}
  const b=blank();try{const o=JSON.parse(localStorage.getItem(OLD)||'null');if(o){b.day=o.day||1;
   for(const id in (o.checked||{})){const q=byId[id],p=PERM[id];if(!q||!p||REW.includes(+id)||o.answers[id]==null)continue;b.answers[id]=p[o.answers[id]];b.checked[id]=true;
@@ -140,8 +140,12 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
 function hl(t){return esc(t).replace(/\b(best first step|first|most reliable|most likely|most|primary|least|best|trade-off|tradeoffs?|root cause|only|always|never|NOT|TWO|guarantee[sd]?|deterministic(ally)?)\b/gi,'<mark class="kw">$1</mark>')}
 function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function dueList(){const t=today();return Object.keys(s.srs).filter(id=>byId[id]&&!s.srs[id].mastered&&s.srs[id].due<=t).map(id=>byId[id])}
-let rev={},revIds=null;
-function list(){if(s.view==='review'){if(!revIds)revIds=dueList().map(q=>q.id);return revIds.map(id=>byId[id])}let a=Q.filter(q=>q.day===s.day);if(s.domain!=='all')a=a.filter(q=>q.domain===s.domain);return a}
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function perm(q,st){st=st||(s.oord||(s.oord={}));const n=q.optionsEn.length;if(!Array.isArray(st[q.id])||st[q.id].length!==n){st[q.id]=shuf([...Array(n).keys()]);setTimeout(save,0)}return st[q.id]}
+function newPerm(q){if(q&&s.oord)delete s.oord[q.id]}
+const LT=(pm,i)=>L[pm.indexOf(i)];const LS=(pm,x)=>x==null||(Array.isArray(x)&&!x.length)?'—':Array.isArray(x)?x.map(i=>LT(pm,i)).sort().join(' + '):LT(pm,x);
+let prac=null;
+function list(){if(s.view==='review'){if(!s.revIds)s.revIds=shuf(dueList().map(q=>q.id));return s.revIds.map(id=>byId[id]).filter(Boolean)}let a=Q.filter(q=>q.day===s.day);s.qord=s.qord||{};let o=s.qord[s.day];if(!Array.isArray(o)||o.length!==a.length||!a.every(q=>o.includes(q.id))){o=s.qord[s.day]=shuf(a.map(q=>q.id));setTimeout(save,0)}a=o.map(id=>byId[id]);if(s.domain!=='all')a=a.filter(q=>q.domain===s.domain);return a}
 // One SRS path for study + review answers. Returns what happened (for tests/UI).
 function srsUpdate(q,ok){const t=today(),r=s.srs[q.id];
  const la=s.lastAns||(s.lastAns={});if(la[q.id]===t||(r&&r.last===t))return 'same-day'; // 2nd answer same local day never counts
@@ -155,9 +159,9 @@ function srsUpdate(q,ok){const t=today(),r=s.srs[q.id];
 
 let sel=null;
 function cur(){const a=list();if(s.index>=a.length)s.index=Math.max(0,a.length-1);return a[s.index]}
-function ansOf(q){return s.view==='review'?rev[q.id]:s.answers[q.id]}
-function done(q){return s.view==='review'?rev[q.id]!==undefined:!!s.checked[q.id]}
-function drawDays(){$('days').innerHTML='';for(let d=1;d<=15;d++){const b=document.createElement('button');b.className='day';b.textContent=d;const qs=Q.filter(q=>q.day===d);if(qs.every(q=>s.checked[q.id]))b.classList.add('done');if(d===s.day&&s.view==='study')b.classList.add('active');b.onclick=()=>{s.day=d;s.index=0;s.view='study';sel=null;save();render()};$('days').appendChild(b)}}
+function ansOf(q){return s.view==='review'?s.rev[q.id]:s.answers[q.id]}
+function done(q){return s.view==='review'?s.rev[q.id]!==undefined:!!s.checked[q.id]}
+function drawDays(){$('days').innerHTML='';for(let d=1;d<=15;d++){const b=document.createElement('button');b.className='day';b.textContent=d;const qs=Q.filter(q=>q.day===d);if(qs.every(q=>s.checked[q.id]))b.classList.add('done');if(d===s.day&&s.view==='study')b.classList.add('active');b.onclick=()=>{s.day=d;s.index=0;s.view='study';sel=null;prac=null;if(s.qord)delete s.qord[d];newPerm(cur());save();render()};$('days').appendChild(b)}}
 function stats(){const c=Object.keys(s.checked).filter(id=>byId[id]);const ok=c.filter(id=>eq(byId[id],s.answers[id])).length;$('answered').textContent=c.length;$('correct').textContent=ok;$('accuracy').textContent=c.length?Math.round(ok/c.length*100)+'%':'—';
  const dq=Q.filter(q=>q.day===s.day);$('bar').style.width=(dq.filter(q=>s.checked[q.id]).length/dq.length*100)+'%';$('dueN').textContent=dueList().length}
 function tabs(){['Study','Review','Stats','Mock'].forEach(t=>$('tab'+t).classList.toggle('on',s.view===t.toLowerCase()));
@@ -166,25 +170,25 @@ function render(){drawDays();stats();tabs();if(s.view==='stats')return drawStats
  const a=list(),q=cur();$('dayTag').textContent=s.view==='review'?'ÔN HÔM NAY':'DAY '+String(s.day).padStart(2,'0');
  if(!q){$('position').textContent='';$('qEn').textContent=s.view==='review'?'🎉 Không có câu nào cần ôn hôm nay.':'Không có câu.';$('qVi').textContent='';$('options').innerHTML='';$('feedback').className='feedback hidden';['prev','next','guessWrap'].forEach(i=>$(i).classList.add('hidden'));$('domainName').textContent='';$('kwTag').textContent='';$('status').textContent='';return}
  ['prev','next','guessWrap'].forEach(i=>$(i).classList.remove('hidden'));
- const d=done(q),m=s.mode,showVi=m==='vi'||m==='both'||(m==='enfirst'&&d),showEn=m!=='vi';
+ const P=prac&&prac.id===q.id?prac:null,d=P?P.done:done(q),A=P?P.v:ansOf(q),pm=perm(q),m=s.mode,showVi=m==='vi'||m==='both'||(m==='enfirst'&&d),showEn=m!=='vi';
  $('position').textContent='Câu '+(s.index+1)+' / '+a.length+' · #'+q.id;$('domainName').textContent=q.domain+' · '+q.domainEn;$('kwTag').textContent='Guide '+q.ts+' · '+q.kw;
- $('status').textContent=d?(eq(q,ansOf(q))?'✓ Đúng':'✗ Sai'):'Chưa chấm';$('status').className=d?'isdone':'';
+ $('status').textContent=(P?'🔄 Luyện lại · ':'')+(d?(eq(q,A)?'✓ Đúng':'✗ Sai'):'Chưa chấm');$('status').className=d?'isdone':'';
  $('qEn').innerHTML=showEn?(d?hl(q.qEn):esc(q.qEn)):esc(q.qVi);$('qVi').textContent=q.qVi;$('qVi').classList.toggle('hidden',!(showVi&&showEn));
- if(sel===null||sel.id!==q.id)sel={id:q.id,v:d?ansOf(q):(isMulti(q)?[]:null)};
+ if(sel===null||sel.id!==q.id||sel.p!==!!P)sel={id:q.id,p:!!P,v:d?A:(isMulti(q)?[]:null)};
  const o=$('options');o.innerHTML='';
- q.optionsEn.forEach((t,i)=>{const el=document.createElement('label');el.className='option';const picked=isMulti(q)?(sel.v||[]).includes(i):sel.v===i;
+ pm.forEach((i,k)=>{const t=q.optionsEn[i];const el=document.createElement('label');el.className='option';const picked=isMulti(q)?(sel.v||[]).includes(i):sel.v===i;
   if(picked)el.classList.add('selected');if(d){el.classList.add('locked');const C=isMulti(q)?q.correct.includes(i):q.correct===i;if(C)el.classList.add('correct');else if(picked)el.classList.add('wrong')}
-  el.innerHTML='<span class="badge">'+L[i]+'</span><span class="txt"><span>'+esc(showEn?t:q.optionsVi[i])+'</span>'+(showVi&&showEn?'<span class="vi">'+esc(q.optionsVi[i])+'</span>':'')+'</span>';
+  el.innerHTML='<span class="badge">'+L[k]+'</span><span class="txt"><span>'+esc(showEn?t:q.optionsVi[i])+'</span>'+(showVi&&showEn?'<span class="vi">'+esc(q.optionsVi[i])+'</span>':'')+'</span>';
   el.onclick=()=>{if(d)return;if(isMulti(q)){const v=sel.v;const k=v.indexOf(i);k>=0?v.splice(k,1):v.push(i);if(v.length===q.correct.length)return grade();render()}else{sel.v=i;grade()}};o.appendChild(el)});
- if(!d&&$('guess').dataset.q!==String(q.id)){$('guess').checked=!!s.guessed[q.id]}else if(d)$('guess').checked=!!s.guessed[q.id];$('guess').dataset.q=q.id;$('guess').disabled=d;
+ if(!d&&$('guess').dataset.q!==String(q.id)){$('guess').checked=!!s.guessed[q.id]}else if(d)$('guess').checked=!!s.guessed[q.id];$('guess').dataset.q=q.id;$('guess').disabled=d||!!P;
  $('pickHint').textContent=d?'':isMulti(q)?'· Chọn '+q.correct.length+' đáp án, tự chấm khi đủ ('+sel.v.length+'/'+q.correct.length+')':'· Bấm một phương án để chấm ngay';$('prev').disabled=s.index===0;$('next').disabled=s.index>=a.length-1;
  const f=$('feedback');if(!d){f.className='feedback hidden';return}
- const ok=eq(q,ansOf(q)),cl=isMulti(q)?q.correct.map(i=>L[i]).join(' + '):L[q.correct];
- const fresh=emoNew&&emoNew.id===q.id;let h='<h3>'+(ok?'✓ Chính xác!':'✗ Chưa đúng')+' — Đáp án: '+cl+'</h3><p><b>EN:</b> '+esc(q.explanationEn)+'</p><p class="vi-p"><b>VI:</b> '+esc(q.explanationVi)+'</p>';
- if(q.whyEn)h+='<p><b>Vì sao từng phương án / Why each option:</b></p>'+q.whyEn.map((w,i)=>'<p class="why"><b>'+L[i]+'.</b> '+esc(w)+'<span class="vi">'+esc(q.whyVi[i])+'</span></p>').join('');
+ const ok=eq(q,A),cl=LS(pm,q.correct);
+ const fresh=emoNew&&emoNew.id===q.id;let h='<h3>'+(P?'🔄 ':'')+(ok?'✓ Chính xác!':'✗ Chưa đúng')+' — Đáp án: '+cl+(P?' <small class="muted">(luyện lại — không tính điểm)</small>':'')+'</h3><p><b>EN:</b> '+esc(q.explanationEn)+'</p><p class="vi-p"><b>VI:</b> '+esc(q.explanationVi)+'</p>';
+ if(q.whyEn)h+='<p><b>Vì sao từng phương án / Why each option:</b></p>'+pm.map((i,k)=>'<p class="why"><b>'+L[k]+'.</b> '+esc(q.whyEn[i])+'<span class="vi">'+esc(q.whyVi[i])+'</span></p>').join('');
  else h+='<p class="why"><i>Các phương án còn lại không đáp ứng yêu cầu chính của tình huống (vi phạm ràng buộc, thiếu xác minh hoặc kém tin cậy hơn).</i></p>';
  const r=s.srs[q.id];if(r)h+='<p class="muted">🔁 '+(r.mastered?'Đã thuộc (3 lần đúng liên tiếp ở các ngày khác nhau)':'Ôn lại: '+r.due+' · chuỗi đúng '+r.streak+'/3')+'</p>';
- f.innerHTML=h;f.className='feedback '+(ok?'ok':'no');if(fresh){const e=emoNew;emoNew=null;showPop(emoHtml(ok));if(ok)confetti();else if(!RM()){const ch=Array.isArray(e.pick)?e.pick:[e.pick];document.querySelectorAll('#options .option').forEach((o,i)=>{if(ch.includes(i)&&!(Array.isArray(q.correct)?q.correct.includes(i):q.correct===i)){o.classList.add('shake');setTimeout(()=>o.classList.remove('shake'),500)}})}}}
+ if(s.view==='study')h+='<div class="actions"><button class="secondary" id="retryQ">🔄 Làm lại câu này</button></div>';f.innerHTML=h;f.className='feedback '+(ok?'ok':'no');if($('retryQ'))$('retryQ').onclick=()=>{prac={id:q.id,v:null,done:false};newPerm(q);sel=null;save();render();window.scrollTo({top:$('qEn').getBoundingClientRect().top+scrollY-80})};if(fresh){const e=emoNew;emoNew=null;showPop(emoHtml(ok));if(ok)confetti();else if(!RM()){const ch=Array.isArray(e.pick)?e.pick:[e.pick];document.querySelectorAll('#options .option').forEach((o,k)=>{const i=pm[k];if(ch.includes(i)&&!(Array.isArray(q.correct)?q.correct.includes(i):q.correct===i)){o.classList.add('shake');setTimeout(()=>o.classList.remove('shake'),500)}})}}}
 
 const EMO={ok:['🎉','👏','🔥','🌟','💯','😎'],no:['😅','🤔','💪','😏','🤡','😬','😂'],
 okM:[['Đúng rồi đấy, nhưng đừng tưởng bở 😒','Don\'t get cocky'],['May mắn thôi, mai lại sai 🫠','Pure luck'],['Ui đúng à, ai nhắc bài thế 👀','Who told you?'],['Đúng à? Chắc chọn bừa thôi 😒','Random click detected'],['Lại đúng, chán ghê, không có gì để cà khịa 🙄','Boring'],['Ủa đúng thật hả? Xỉu ngang 😵','Wait what'],['Ao trình vừa thôi, để phần người khác với 🙄','Show-off'],['Thôi đừng flex nữa, lần sau sai là biết 😏','Stop flexing'],['Đúng mà mặt vẫn gian gian 🤨','Suspicious'],['Mèo mù vớ cá rán, công nhận cá ngon 🐱','Blind luck'],['1 điểm thôi nha, không có thêm cái nịt nào đâu 😤','That\'s it'],['Đúng rồi, giờ đi khoe cả xóm đi 📢','Go brag'],['Bật mí đi, xem đáp án trước đúng không 🕵️','Peeked?'],['Đúng nhưng chậm, Claude trả lời nhanh hơn 🐢','Slow but ok'],['Kiến trúc sư đá đểm đây chứ đâu 😎','Fancy architect'],['Chặt chém ghê, Claude hơi bị sợ rồi 😨','Ruthless'],['Đừng nghĩ mình là Opus nha bồ 🙄','Calm down'],['Đúng 1 câu mà tưởng mình CTO rồi à 👔','Not CTO yet'],['Ừ đúng, vỗ tay 1 cái thôi 👏','One clap'],['Hôm nay đúng, mai thi lại quên thôi 🫠','See you tomorrow']],
@@ -203,11 +207,11 @@ function mockEmo(pct){const b=pct>=90?['👑','Điểm cao thế này chắc gia
 const nb=s=>s.replace(/ (\S+)$/,'\u00a0$1');function showPop(html){closePop();const d=document.createElement('div');d.id='emoPop';d.innerHTML=html;d.onclick=closePop;document.body.appendChild(d);popT=setTimeout(closePop,4000)}
 function closePop(){clearTimeout(popT);const d=document.getElementById('emoPop');if(d)d.remove()}
 let popT,mockPop=false;addEventListener('keydown',e=>{if(e.key==='Escape')closePop()});
-function grade(){const q=cur();if(!q||!sel)return;const v=isMulti(q)?sel.v.slice():sel.v;s.guessed[q.id]=$('guess').checked;
- if(s.view==='review')rev[q.id]=v;else{s.answers[q.id]=v;s.checked[q.id]=true}
+function grade(){const q=cur();if(!q||!sel)return;const v=isMulti(q)?sel.v.slice():sel.v;if(prac&&prac.id===q.id){prac.v=v;prac.done=true;render();return}s.guessed[q.id]=$('guess').checked;
+ if(s.view==='review')s.rev[q.id]=v;else{s.answers[q.id]=v;s.checked[q.id]=true}
  {const g=eq(q,v);if(g){stOk++;stNo=0}else{stNo++;stOk=0}emoNew={id:q.id,ok:g,pick:v}}srsUpdate(q,eq(q,v));save();if(s.view==='review'){const keep=q;render();}else render()}
-$('prev').onclick=()=>{emoNew=null;s.index--;sel=null;save();render()};
-$('next').onclick=()=>{emoNew=null;s.index++;sel=null;save();render()};
+$('prev').onclick=()=>{emoNew=null;prac=null;s.index--;sel=null;newPerm(cur());save();render()};
+$('next').onclick=()=>{emoNew=null;prac=null;s.index++;sel=null;newPerm(cur());save();render()};
 $('guess').onchange=()=>{};
 
 function drawStats(){const D=['D1','D2','D3','D4','D5'];let h='<h2 style="margin-top:0">📊 Thống kê theo domain</h2><table class="ds"><tr><th>Domain</th><th>Đã làm</th><th>Đúng (chắc)</th><th>Đúng nhờ đoán</th><th>Sai</th><th>Chính xác</th></tr>';
@@ -220,12 +224,12 @@ function drawStats(){const D=['D1','D2','D3','D4','D5'];let h='<h2 style="margin
  h+='<h3>✗ Danh sách câu sai ('+wrong.length+')</h3>'+wrong.map(q=>'<p><a href="#" data-id="'+q.id+'">Ngày '+q.day+' · '+q.domain+' · #'+q.id+'</a> — '+esc(q.qEn.slice(0,110))+'…</p>').join('');
  const sr=Object.values(s.srs);h+='<h3>🔁 Ôn lặp lại</h3><p>Đang ôn: '+sr.filter(r=>!r.mastered).length+' · Đã thuộc: '+sr.filter(r=>r.mastered).length+' · Đến hạn hôm nay: '+dueList().length+'</p>';
  h+='<h3>⏱️ Lịch sử thi thử</h3>'+((s.mockHist||[]).length?'<table class="ds"><tr><th>Ngày</th><th>Điểm</th><th>%</th><th>Phút</th></tr>'+s.mockHist.map(x=>'<tr><td>'+x.date+(x.auto?' ⏰':'')+'</td><td>'+x.ok+'/'+x.n+'</td><td>'+Math.round(x.ok/x.n*100)+'%</td><td>'+x.min+'</td></tr>').join('')+'</table>':'<p class="muted">Chưa thi thử.</p>');
- $('statsView').innerHTML=h;$('statsView').querySelectorAll('a[data-id]').forEach(a=>a.onclick=e=>{e.preventDefault();const q=byId[a.dataset.id];s.view='study';s.domain='all';$('domain').value='all';s.day=q.day;s.index=list().indexOf(q);sel=null;save();render()})}
+ $('statsView').innerHTML=h;$('statsView').querySelectorAll('a[data-id]').forEach(a=>a.onclick=e=>{e.preventDefault();const q=byId[a.dataset.id];s.view='study';s.domain='all';$('domain').value='all';s.day=q.day;s.index=list().indexOf(q);sel=null;prac=null;newPerm(q);save();render()})}
 const MW={D1:16,D3:12,D4:12,D2:11,D5:9},MOCK_MS=120*60000;let tick=null;
 // language helpers for mock: during exam EN-first behaves as EN only (no feedback until submit)
 function mt(en,vi,phase){const m=s.mode;if(m==='vi')return esc(vi);if(m==='both'||(phase==='result'&&m==='enfirst'))return esc(en)+'<span class="vi">'+esc(vi)+'</span>';return esc(en)}
 function startMock(){const ids=[];for(const d in MW){const p=Q.filter(q=>q.domain===d&&(s.mockMulti||!isMulti(q))).sort(()=>Math.random()-.5);ids.push(...p.slice(0,MW[d]).map(q=>q.id))}
- ids.sort(()=>Math.random()-.5);s.mock={ids,ans:{},i:0,start:Date.now(),submitted:false};save();render()}
+ ids.sort(()=>Math.random()-.5);s.mock={ids,ans:{},perm:{},i:0,start:Date.now(),submitted:false};save();render()}
 function submitMock(auto){const m=s.mock;if(!m||m.submitted)return;clearInterval(tick);m.submitted=true;m.auto=!!auto;m.end=Math.min(Date.now(),m.start+MOCK_MS);
  let ok=0;const by={};m.ids.forEach(id=>{const q=byId[id];by[q.domain]=by[q.domain]||[0,0];by[q.domain][1]++;const g=eq(q,m.ans[id]);if(g){ok++;by[q.domain][0]++}
   // feed the same SRS path: wrong/unanswered -> due tomorrow; correct due items advance
@@ -235,15 +239,15 @@ function drawMock(){const v=$('mockView'),m=s.mock;clearInterval(tick);
  if(!m){const hist=(s.mockHist||[]);v.innerHTML='<h2 style="margin-top:0">⏱️ Thi thử 60 câu / 120 phút</h2><p>Rút 60 câu từ ngân hàng 155 câu theo trọng số Exam Guide (D1 27% · D3 20% · D4 20% · D2 18% · D5 15%): D1 16 · D3 12 · D4 12 · D2 11 · D5 9. Không hiện đáp án cho tới khi nộp bài; hết giờ tự nộp.</p><p><label><input type="checkbox" id="mockMulti"'+(s.mockMulti?' checked':'')+'> Gồm cả câu “chọn 2” (Exam Guide chính thức v0.1 nói mọi câu chỉ có 1 đáp án đúng — mặc định TẮT)</label></p><p class="muted">⚠️ 60 câu / 120 phút theo nguồn bên thứ ba, chưa xác nhận trong PDF chính thức.</p>'+(hist.length?'<p class="muted">Lần thi trước: '+hist.slice(-5).map(x=>x.date+' '+x.ok+'/'+x.n).join(' · ')+'</p>':'')+'<button id="mockStart">Bắt đầu thi thử</button>';$('mockStart').onclick=startMock;$('mockMulti').onchange=e=>{s.mockMulti=e.target.checked;save()};return}
  if(m.submitted){const ok=m.ids.filter(id=>eq(byId[id],m.ans[id])).length,by={};m.ids.forEach(id=>{const q=byId[id];by[q.domain]=by[q.domain]||[0,0];by[q.domain][1]++;if(eq(q,m.ans[id]))by[q.domain][0]++});
   if(mockPop){mockPop=false;setTimeout(()=>showPop(mockEmo(Math.round(ok/m.ids.length*100))),0)}let h='<h2 style="margin-top:0">Kết quả: '+ok+' / '+m.ids.length+' ('+Math.round(ok/m.ids.length*100)+'%)'+(m.auto?' · ⏰ tự nộp khi hết giờ':'')+'</h2><p class="muted">Thời gian: '+Math.round((m.end-m.start)/60000)+' phút · Câu sai/bỏ trống đã được đưa vào lịch ôn (Ôn hôm nay).</p><table class="ds"><tr><th>Domain</th><th>Đúng</th><th>%</th></tr>'+Object.keys(MW).filter(d=>by[d]).map(d=>'<tr><td>'+d+'</td><td>'+by[d][0]+'/'+by[d][1]+'</td><td>'+Math.round(by[d][0]/by[d][1]*100)+'%</td></tr>').join('')+'</table>';
-  h+='<h3>Xem lại</h3>'+m.ids.map((id,k)=>{const q=byId[id],a=m.ans[id],good=eq(q,a),fm=x=>x==null||(Array.isArray(x)&&!x.length)?'—':Array.isArray(x)?x.map(i=>L[i]).join('+'):L[x];
-   const C=i=>isMulti(q)?q.correct.includes(i):q.correct===i,P=i=>Array.isArray(a)?a.includes(i):a===i;
+  h+='<h3>Xem lại</h3>'+m.ids.map((id,k)=>{const q=byId[id],a=m.ans[id],good=eq(q,a),fm=x=>LS(perm(q,m.perm||(m.perm={})),x);
+   const pm=perm(q,m.perm||(m.perm={})),C=i=>isMulti(q)?q.correct.includes(i):q.correct===i,P=i=>Array.isArray(a)?a.includes(i):a===i;
    const ex=s.mode==='vi'?esc(q.explanationVi):s.mode==='en'?esc(q.explanationEn):esc(q.explanationEn)+'<span class="vi">'+esc(q.explanationVi)+'</span>';
-   return '<div class="feedback mrev '+(good?'ok':'no')+'"><b>'+(k+1)+'. ['+q.domain+' · Guide '+q.ts+' · '+esc(q.kw)+']</b> '+mt(q.qEn,q.qVi,'result')+'<div>'+q.optionsEn.map((t,i)=>'<p class="why'+(C(i)?' rc':'')+(P(i)&&!C(i)?' rw':'')+'"><b>'+L[i]+'.</b> '+(C(i)?'✓ ':P(i)?'✗ ':'')+mt(t,q.optionsVi[i],'result')+(q.whyEn?'<br><small>'+mt(q.whyEn[i],q.whyVi[i],'result')+'</small>':'')+'</p>').join('')+'</div>Bạn chọn: <b>'+fm(a)+'</b> · Đáp án: <b>'+fm(q.correct)+'</b><br>'+ex+'</div>'}).join('');
+   return '<div class="feedback mrev '+(good?'ok':'no')+'"><b>'+(k+1)+'. ['+q.domain+' · Guide '+q.ts+' · '+esc(q.kw)+']</b> '+mt(q.qEn,q.qVi,'result')+'<div>'+pm.map((i,k)=>{const t=q.optionsEn[i];return '<p class="why'+(C(i)?' rc':'')+(P(i)&&!C(i)?' rw':'')+'"><b>'+L[k]+'.</b> '+(C(i)?'✓ ':P(i)?'✗ ':'')+mt(t,q.optionsVi[i],'result')+(q.whyEn?'<br><small>'+mt(q.whyEn[i],q.whyVi[i],'result')+'</small>':'')+'</p>'}).join('')+'</div>Bạn chọn: <b>'+fm(a)+'</b> · Đáp án: <b>'+fm(q.correct)+'</b><br>'+ex+'</div>'}).join('');
   h+='<div class="actions"><button id="mockNew">Thi lại</button><button class="secondary" id="mockClear">Đóng</button></div>';v.innerHTML=h;$('mockNew').onclick=startMock;$('mockClear').onclick=()=>{s.mock=null;save();render()};return}
  const left=()=>Math.max(0,m.start+MOCK_MS-Date.now());if(!left())return submitMock(true);
  const q=byId[m.ids[m.i]],a=m.ans[q.id];
  let h='<div class="toolbar"><span>Câu '+(m.i+1)+' / '+m.ids.length+' · '+q.domain+(isMulti(q)?' · <b>Chọn '+q.correct.length+'</b>':'')+'</span><span id="timer"></span></div><h2 id="mQ">'+mt(q.qEn,q.qVi,'exam')+'</h2><div>';
- q.optionsEn.forEach((t,i)=>{const p=isMulti(q)?(a||[]).includes(i):a===i;h+='<label class="option'+(p?' selected':'')+'" data-i="'+i+'"><span class="badge">'+L[i]+'</span><span class="txt"><span>'+mt(t,q.optionsVi[i],'exam')+'</span></span></label>'});
+ perm(q,m.perm||(m.perm={})).forEach((i,k)=>{const t=q.optionsEn[i];const p=isMulti(q)?(a||[]).includes(i):a===i;h+='<label class="option'+(p?' selected':'')+'" data-i="'+i+'"><span class="badge">'+L[k]+'</span><span class="txt"><span>'+mt(t,q.optionsVi[i],'exam')+'</span></span></label>'});
  h+='</div><div class="grid">'+m.ids.map((id,k)=>'<button class="'+(m.ans[id]!=null&&!(Array.isArray(m.ans[id])&&!m.ans[id].length)?'ans ':'secondary ')+(k===m.i?'cur':'')+'" data-k="'+k+'">'+(k+1)+'</button>').join('')+'</div><div class="actions"><button class="secondary" id="mPrev">← Trước</button><button class="secondary" id="mNext">Tiếp →</button><button id="mSubmit">Nộp bài</button></div>';
  v.innerHTML=h;v.querySelectorAll('.option').forEach(el=>el.onclick=()=>{const i=+el.dataset.i;if(isMulti(q)){const x=m.ans[q.id]||[];const k=x.indexOf(i);k>=0?x.splice(k,1):x.push(i);m.ans[q.id]=x}else m.ans[q.id]=i;save();drawMock()});
  v.querySelectorAll('.grid button').forEach(b=>b.onclick=()=>{m.i=+b.dataset.k;save();drawMock()});
@@ -252,12 +256,12 @@ function drawMock(){const v=$('mockView'),m=s.mock;clearInterval(tick);
  const t=()=>{const l=left();if(!l){submitMock(true);return}const mm=Math.floor(l/60000),ss=Math.floor(l/1000)%60;const e=$('timer');if(e)e.textContent='⏱ '+mm+':'+String(ss).padStart(2,'0')};t();tick=setInterval(t,1000)}
 ['D1','D2','D3','D4','D5'].forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d+' · '+Q.find(q=>q.domain===d).domainVi+' ('+Q.filter(q=>q.domain===d).length+')';$('domain').appendChild(o)});
 $('domain').value=s.domain;$('mode').value=s.mode;
-$('domain').onchange=e=>{s.domain=e.target.value;s.index=0;sel=null;save();render()};
+$('domain').onchange=e=>{s.domain=e.target.value;s.index=0;sel=null;prac=null;save();render()};
 $('mode').onchange=e=>{s.mode=e.target.value;save();render()};
-$('resetDay').onclick=()=>{if(!confirm('Làm lại ngày '+s.day+'?'))return;Q.filter(q=>q.day===s.day).forEach(q=>{delete s.answers[q.id];delete s.checked[q.id];delete s.guessed[q.id]});s.index=0;sel=null;save();render()};
+$('resetDay').onclick=()=>{if(!confirm('Làm lại ngày '+s.day+'?'))return;Q.filter(q=>q.day===s.day).forEach(q=>{delete s.answers[q.id];delete s.checked[q.id];delete s.guessed[q.id]});if(s.qord)delete s.qord[s.day];prac=null;s.index=0;sel=null;newPerm(cur());save();render()};
 $('resetAll').onclick=()=>{if(!confirm('Xóa toàn bộ tiến độ?'))return;s=blank();save();render()};
-$('tabStudy').onclick=()=>{s.view='study';sel=null;save();render()};
-$('tabReview').onclick=()=>{s.view='review';revIds=null;rev={};s.index=0;sel=null;save();render()};
+$('tabStudy').onclick=()=>{s.view='study';sel=null;prac=null;save();render()};
+$('tabReview').onclick=()=>{s.view='review';s.revIds=null;s.rev={};s.index=0;sel=null;prac=null;newPerm(cur());save();render()};
 $('tabStats').onclick=()=>{s.view='stats';save();render()};
 $('tabMock').onclick=()=>{s.view='mock';save();render()};
 if(s.view==='review')s.view='study';
