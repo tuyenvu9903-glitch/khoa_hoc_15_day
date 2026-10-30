@@ -179,5 +179,5 @@ function mark(){document.querySelectorAll('#days .day').forEach(function(b,i){va
 var prev=window.render;window.render=function(){prev.apply(this,arguments);draw();mark()};draw();mark();
 })();
 
-(function(){var old=document.getElementById('tabReview');if(!old)return;var b=old.cloneNode(false);b.id='tabLab';b.innerHTML='🛠 Bài tập cuối ngày<span id="dueN" style="display:none">0</span>';old.parentNode.replaceChild(b,old);
+(function(){var old=document.getElementById('tabReview');if(!old)return;var b=old.cloneNode(false);b.innerHTML='🛠 Bài tập cuối ngày<span id="dueN" style="display:none">0</span>';old.parentNode.replaceChild(b,old);
 b.onclick=function(){var st=document.getElementById('tabStudy');if(st&&!st.classList.contains('on'))st.click();setTimeout(function(){var l=document.getElementById('lab');if(l)l.scrollIntoView({behavior:'smooth',block:'start'})},60)}})();
