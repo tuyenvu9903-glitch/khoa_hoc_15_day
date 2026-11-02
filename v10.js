@@ -6,7 +6,10 @@ window.V10SCN=SCN;
 const allQ=()=>{const seen=new Set(),o=[];Object.values(byId).forEach(q=>{if(!seen.has(q.id)){seen.add(q.id);o.push(q)}});return o};
 const pool=sid=>allQ().filter(q=>q.scenario===sid);
 // difficulty mix per 15-question scenario block: ~3 multiple-response, ~5 hard, rest standard
-function pickBlock(sid,n){const p=shuf(pool(sid)),mr=p.filter(isMulti),hd=p.filter(q=>!isMulti(q)&&q.hard),st=p.filter(q=>!isMulti(q)&&!q.hard);
+const TW={};(V.twins||[]).forEach((g,i)=>g.forEach(id=>TW[id]=i));window.V10TW=TW;
+// near-duplicate guard: at most one question per twin group in one mock (used = groups already taken by earlier blocks)
+function dedupe(a,used){const seen=new Set(used||[]),o=[];for(const q of a){const g=TW[q.id];if(g!=null){if(seen.has(g))continue;seen.add(g)}o.push(q)}return o}
+function pickBlock(sid,n,used){const p0=shuf(pool(sid)),p=dedupe([...p0.filter(isMulti),...p0.filter(q=>!isMulti(q))],used),mr=p.filter(isMulti),hd=p.filter(q=>!isMulti(q)&&q.hard),st=p.filter(q=>!isMulti(q)&&!q.hard);
  const nMr=Math.min(mr.length,Math.round(n*0.2)),M=mr.slice(0,nMr),nHd=Math.max(0,Math.min(hd.length,Math.round(n*0.33)-M.filter(q=>q.hard).length));
  const out=[...M,...hd.slice(0,nHd)];for(const q of st){if(out.length>=n)break;out.push(q)}for(const q of p){if(out.length>=n)break;if(!out.includes(q))out.push(q)}
  return shuf(out).map(q=>q.id)}
@@ -19,7 +22,7 @@ startMock=function(k){if(k&&k.target)k=null;if(k==='rand')k='v10';
  if(!cfg&&typeof k==='string'&&k.startsWith('sc:')&&SCN[k.slice(3)]){cfg={per:15,ms:30*60000,title:'Theo scenario · '+SCN[k.slice(3)].titleEn+' · 15 câu / 30 phút'};sids=[k.slice(3)]}
  if(!cfg)return _start(k);
  sids=sids||shuf(SC.map(x=>x.id)).slice(0,cfg.n);const ids=[],secs=[];
- sids.forEach(sid=>{const a=pickBlock(sid,cfg.per);secs.push({sid,from:ids.length,n:a.length});ids.push(...a)});
+ const used=new Set();sids.forEach(sid=>{const a=pickBlock(sid,cfg.per,used);a.forEach(id=>{if(TW[id]!=null)used.add(TW[id])});secs.push({sid,from:ids.length,n:a.length});ids.push(...a)});
  s.mock={k,ids,ans:{},perm:{},flags:{},i:0,start:Date.now(),submitted:false,ms:cfg.ms,title:cfg.title,sids,secs};save();render();toTop()};
 function toTop(){try{scrollTo(0,0)}catch(e){}}
 const secOf=(m,i)=>(m.secs||[]).find(x=>i>=x.from&&i<x.from+x.n);

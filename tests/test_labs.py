@@ -182,5 +182,47 @@ class TestQuestionData(unittest.TestCase):
         for S in sc:
             self.assertGreaterEqual(counts.get(S["id"], 0), 15, S["id"])
 
+    def _bank(self):
+        L = open(os.path.join(ROOT, "index.html"), encoding="utf8").read().split("\n")
+        q = [l for l in L if l.startswith("<script>const Q=[")][0]
+        e = [l for l in L if l.startswith("const EX={")][0]
+        return json.loads(q[len("<script>const Q="):].rstrip(";")), json.loads(e[e.index("{"):].rstrip(";"))
+
+    def test_deep_distractor_explanations(self):
+        Q, EX = self._bank()
+        self.assertGreaterEqual(len(Q), 150)
+        for q in Q:
+            c = q["correct"] if isinstance(q["correct"], list) else [q["correct"]]
+            for i in range(len(q["optionsEn"])):
+                self.assertTrue(q["whyVi"][i].strip(), (q["id"], i))
+                if i not in c:
+                    self.assertGreaterEqual(len(q["whyEn"][i]), 60, (q["id"], i))
+                    self.assertGreaterEqual(len(q["whyVi"][i]), 60, (q["id"], i))
+                    self.assertFalse(q["whyEn"][i].startswith("Correct"), (q["id"], i))
+
+    def test_questions_standalone_and_keys_valid(self):
+        Q, EX = self._bank()
+        for q in Q + [x for v in EX.values() for x in v]:
+            self.assertNotRegex(q["qEn"], r"(?i)^following (the|that)|previous (question|misrouting)|that (omission|degradation)")
+            self.assertNotIn("câu trước", q["qVi"])
+            c = q["correct"] if isinstance(q["correct"], list) else [q["correct"]]
+            n = len(q["optionsEn"])
+            self.assertTrue(all(0 <= x < n for x in c), q["id"])
+            self.assertEqual(len(q["whyEn"]), n); self.assertEqual(len(q["optionsVi"]), n)
+        for k, v in EX.items():
+            self.assertEqual(len(v), 60); self.assertEqual(len({q["id"] for q in v}), 60)
+
+    def test_manual_tags_and_twins(self):
+        M = json.load(open(os.path.join(ROOT, "tools", "tag_manual.json"), encoding="utf8"))
+        tag = {int(k): v for k, v in self.V["tag"].items()}
+        for k, v in M.items():
+            if v is None: self.assertNotIn(int(k), tag)
+            else: self.assertEqual(tag[int(k)], v)
+        self.assertNotIn(1022, tag)  # weekly competitor report: not a research-system question
+        seen = set()
+        for g in self.V["twins"]:
+            self.assertGreaterEqual(len(g), 2)
+            self.assertFalse(seen & set(g)); seen |= set(g)
+
 if __name__ == "__main__":
     unittest.main()
