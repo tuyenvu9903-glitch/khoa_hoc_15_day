@@ -133,15 +133,44 @@ cmd = json.load(sys.stdin)["tool_input"].get("command","")
 if "rm -rf /" in cmd or "DROP TABLE" in cmd.upper():
     print("Bị chặn bởi policy: lệnh phá hủy", file=sys.stderr); sys.exit(2)
 sys.exit(0)`,e:"PreToolUse:Bash hook error: Bị chặn bởi policy: lệnh phá hủy\nClaude đề xuất lệnh an toàn hơn",k:["Phân biệt prompt (xác suất) vs hook (tất định)","Exit 2 = chặn + đưa stderr cho model","Biết thêm PostToolUse để chuẩn hóa output"]},
-12:{t:"Tool scoping: mỗi agent ít tool, đúng vai",d:"D2",g:"Quá nhiều tool làm chọn sai; phân bổ 4–5 tool/agent và đo tỉ lệ chọn đúng.",s:["Tạo 15 tool giả (chỉ description)","Chạy 10 câu hỏi với: (a) cả 15 tool, (b) agent chỉ 4 tool liên quan","Đếm số lần gọi đúng tool"],c:`ALL = [mk(f"tool_{i}", desc) for i, desc in enumerate(DESCS)]   # 15 tool
-BILLING = [t for t in ALL if t["name"] in ("get_invoice","refund","get_order","find_customer")]
+12:{t:"Tool scoping: mỗi agent ít tool, đúng vai",d:"D2",g:"Quá nhiều tool làm chọn sai; phân bổ 4–5 tool/agent và đo tỉ lệ chọn đúng.",s:["Tạo 15 tool giả (chỉ description)","Chạy 10 câu hỏi với: (a) cả 15 tool, (b) agent chỉ 4 tool liên quan","Đếm số lần gọi đúng tool"],c:`import anthropic
+c = anthropic.Anthropic(); MODEL = "claude-sonnet-4-5"
+def mk(name, desc):
+    return {"name": name, "description": desc,
+            "input_schema": {"type": "object", "properties": {"q": {"type": "string"}}}}
+DESCS = [  # (name, description) — 15 tool giả, chỉ có description
+    ("get_invoice", "Lấy hóa đơn theo invoice_id hoặc tháng của khách"),
+    ("refund", "Hoàn tiền một khoản đã thanh toán (cần order_id)"),
+    ("get_order", "Xem chi tiết đơn hàng theo order_id"),
+    ("find_customer", "Tìm khách theo email/số điện thoại, trả customer_id"),
+    ("search_docs", "Tìm trong tài liệu sản phẩm"),
+    ("create_ticket", "Tạo ticket hỗ trợ kỹ thuật"),
+    ("get_weather", "Thời tiết theo thành phố"),
+    ("translate", "Dịch văn bản giữa các ngôn ngữ"),
+    ("send_email", "Gửi email marketing"),
+    ("schedule_meeting", "Đặt lịch họp nội bộ"),
+    ("run_sql", "Chạy truy vấn SQL phân tích"),
+    ("get_stock", "Tồn kho theo SKU"),
+    ("update_address", "Cập nhật địa chỉ giao hàng"),
+    ("summarize", "Tóm tắt văn bản dài"),
+    ("web_search", "Tìm kiếm trên internet"),
+]
+ALL = [mk(n, d) for n, d in DESCS]   # 15 tool
+BILLING = [t for t in ALL if t["name"] in ("get_invoice", "refund", "get_order", "find_customer")]
+CASES = [("Hóa đơn tháng 3 của tôi đâu?", "get_invoice"), ("Hoàn tiền đơn #812", "refund"),
+         ("Đơn #77 đang ở đâu?", "get_order"), ("Tìm khách có email a@b.vn", "find_customer"),
+         ("Tôi bị trừ tiền 2 lần cho đơn #90, trả lại giúp", "refund"),
+         ("Gửi lại hóa đơn INV-2041", "get_invoice"), ("Đơn #55 gồm những món nào?", "get_order"),
+         ("Số 0901234567 là khách nào?", "find_customer"), ("Xin hóa đơn VAT tháng trước", "get_invoice"),
+         ("Kiểm tra trạng thái đơn #31", "get_order")]
 def first_tool(q, tools):
-    r = c.messages.create(model=MODEL,max_tokens=200,tools=tools,tool_choice={"type":"any"},
-                          messages=[{"role":"user","content":q}])
-    return r.content[-1].name
-for name, ts in (("15 tool", ALL), ("4 tool", BILLING)):
-    ok = sum(first_tool(q, ts)==exp for q, exp in CASES)
-    print(name, f"{ok}/{len(CASES)}")`,e:"15 tool 7/10\n4 tool 10/10",k:["tool_choice any/auto/tool: hiểu khác nhau","Agent chuyên trách = ít tool hơn","Có số đo trước/sau"]},
+    r = c.messages.create(model=MODEL, max_tokens=200, tools=tools, tool_choice={"type": "any"},
+                          messages=[{"role": "user", "content": q}])
+    return next(b.name for b in r.content if b.type == "tool_use")
+if __name__ == "__main__":
+    for name, ts in (("15 tool", ALL), ("4 tool", BILLING)):
+        ok = sum(first_tool(q, ts) == exp for q, exp in CASES)
+        print(name, f"{ok}/{len(CASES)}")`,e:"15 tool 7/10\n4 tool 10/10",k:["tool_choice any/auto/tool: hiểu khác nhau","Agent chuyên trách = ít tool hơn","Có số đo trước/sau"]},
 13:{t:"Plan mode vs thực thi trực tiếp + /compact",d:"D3",g:"Biết khi nào dùng plan mode (thay đổi lớn, nhiều file) và cách giữ context gọn trong phiên dài.",s:["Trong repo mẫu, yêu cầu refactor đổi tên module dùng ở ≥5 file","Lần 1: Shift+Tab bật plan mode → đọc plan → duyệt","Sau khi xong: /compact 'giữ lại danh sách file đã sửa'; ghi lại token trước/sau bằng /cost hoặc /context"],c:`# Ghi lại trong notes/day13.md
 | Tác vụ | Plan mode? | Lý do |
 |---|---|---|
