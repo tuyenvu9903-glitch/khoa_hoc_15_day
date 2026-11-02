@@ -3,6 +3,9 @@
 const V=window.V10;if(!V)return;const G=V.guide,SC=V.sc,SCN={};SC.forEach(x=>SCN[x.id]=x);
 for(const id in V.tag){if(byId[id]&&!byId[id].scenario)byId[id].scenario=V.tag[id]}
 window.V10SCN=SCN;
+window.V10hl=function(t,S){const e=esc(t);if(!S||!S.hl)return e;const ks=S.hl.map(esc).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+ return e.replace(new RegExp('(?<![A-Za-z0-9_À-ỹ])('+ks.join('|')+')(?![A-Za-z0-9_À-ỹ])','g'),'<mark class="kw">$1</mark>')};
+
 const allQ=()=>{const seen=new Set(),o=[];Object.values(byId).forEach(q=>{if(!seen.has(q.id)){seen.add(q.id);o.push(q)}});return o};
 const pool=sid=>allQ().filter(q=>q.scenario===sid);
 // difficulty mix per 15-question scenario block: ~3 multiple-response, ~5 hard, rest standard
@@ -27,7 +30,7 @@ startMock=function(k){if(k&&k.target)k=null;if(k==='rand')k='v10';
 function toTop(){try{scrollTo(0,0)}catch(e){}}
 const secOf=(m,i)=>(m.secs||[]).find(x=>i>=x.from&&i<x.from+x.n);
 window.scBox=function(q,m){const k=m.ids.indexOf(q.id),sec=secOf(m,k);if(!sec)return '';const S=SCN[sec.sid],no=m.secs.indexOf(sec)+1,first=k===sec.from;
- return '<details class="scbox"'+(first?' open':'')+'><summary>📂 Scenario '+no+'/'+m.secs.length+': <b>'+esc(S.titleEn)+'</b> · câu '+(k-sec.from+1)+'/'+sec.n+'</summary><p>'+esc(S.ctxEn)+'</p>'+(s.mode==='en'?'':'<p class="vi">'+esc(S.ctxVi)+'</p>')+'</details>'};
+ return '<details class="scbox"'+(first?' open':'')+'><summary>📂 Scenario '+no+'/'+m.secs.length+': <b>'+esc(S.titleEn)+'</b> · câu '+(k-sec.from+1)+'/'+sec.n+'</summary><p>'+V10hl(S.ctxEn,S)+'</p>'+(s.mode==='en'?'':'<p class="vi">'+V10hl(S.ctxVi,S)+'</p>')+'</details>'};
 const scaled=p=>Math.round(100+900*p);
 window.V10scaled=scaled;
 function resultExtra(m){const n=m.ids.length,ok=m.ids.filter(id=>eq(byId[id],m.ans[id])).length,p=n?ok/n:0,sc=scaled(p);
@@ -66,14 +69,14 @@ function guideHtml(){const w=G.weights;return '<details class="g10" open><summar
  '</table><p class="muted">Nguồn: <a href="'+G.src+'" target="_blank" rel="noopener">Claude Certified Architect – Foundations Exam Guide, Version 1.0</a> (bản PDF công khai). Web này là tài liệu ôn tự biên soạn, không phải đề thật.</p></details>'}
 window.V10guideHtml=guideHtml;
 function drawScen(card){const st=sid=>{const p=Object.values(byId).filter(q=>q.scenario===sid);const u=[...new Map(p.map(q=>[q.id,q])).values()];return u};
- let h='<h2 style="margin-top:0">📂 6 Scenario của Exam Guide v1.0</h2>'+guideHtml()+'<p class="muted">Đoạn <b>Bối cảnh</b> lấy nguyên văn từ Exam Guide v1.0. Phần <b>Kiến trúc / Yêu cầu / Ràng buộc</b> là minh họa do khóa học tự viết để luyện tư duy, không phải nội dung chính thức.</p>';
+ let h='<h2 style="margin-top:0">📂 6 Scenario của Exam Guide v1.0</h2>'+guideHtml()+'<p class="muted">Đoạn <b>Bối cảnh</b> lấy nguyên văn từ Exam Guide v1.0. Phần <b>Kiến trúc / Yêu cầu / Ràng buộc</b> là minh họa do khóa học tự viết để luyện tư duy, không phải nội dung chính thức.</p><span class="kwleg"><mark class="kw">Vàng</mark> = keyword nên để ý (tool/thành phần, ràng buộc/giới hạn, cụm báo hiệu đề thi)</span>';
  SC.forEach((S,k)=>{const qs=st(S.id),inBank=qs.filter(q=>BANK.has(q.id)),by={};qs.forEach(q=>by[q.domain]=(by[q.domain]||0)+1);
   h+='<details class="scen" id="scen_'+S.id+'"><summary><b>Scenario '+(k+1)+': '+esc(S.titleEn)+'</b><span class="vi">'+esc(S.titleVi)+'</span><small class="muted">'+qs.length+' câu liên kết · '+qs.filter(isMulti).length+' câu chọn nhiều · '+qs.filter(q=>q.hard).length+' câu khó · Primary domains: '+S.dom.join(', ')+'</small></summary>'+
-  '<h4>Bối cảnh (Exam Guide v1.0)</h4><p>'+esc(S.ctxEn)+'</p><p class="vi">'+esc(S.ctxVi)+'</p>'+
+  '<h4>Bối cảnh (Exam Guide v1.0)</h4><p>'+V10hl(S.ctxEn,S)+'</p><p class="vi">'+V10hl(S.ctxVi,S)+'</p>'+
   '<p class="muted">Primary domains: '+S.dom.map(d=>d+' '+DN[d]).join(' · ')+'</p>'+
-  '<h4>🏗 Kiến trúc hệ thống (minh họa)</h4><ul>'+S.arch.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>'+
-  '<h4>✅ Yêu cầu</h4><ul>'+S.req.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>'+
-  '<h4>⛔ Ràng buộc</h4><ul>'+S.cons.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>'+
+  '<h4>🏗 Kiến trúc hệ thống (minh họa)</h4><ul>'+S.arch.map(x=>'<li>'+V10hl(x,S)+'</li>').join('')+'</ul>'+
+  '<h4>✅ Yêu cầu</h4><ul>'+S.req.map(x=>'<li>'+V10hl(x,S)+'</li>').join('')+'</ul>'+
+  '<h4>⛔ Ràng buộc</h4><ul>'+S.cons.map(x=>'<li>'+V10hl(x,S)+'</li>').join('')+'</ul>'+
   '<h4>🔗 Câu hỏi liên kết ('+qs.length+': '+Object.keys(by).sort().map(d=>d+' '+by[d]).join(' · ')+')</h4><div class="actions" data-sc="'+S.id+'"></div>'+
   '<p class="muted">'+inBank.length+' câu trong ngân hàng học theo ngày (bấm để mở), '+(qs.length-inBank.length)+' câu nằm trong Đề 1–4.</p><div class="sclinks">'+inBank.sort((a,b)=>a.day-b.day).map(q=>'<a href="#" data-id="'+q.id+'">'+(isMulti(q)?'☑ ':'')+'Ngày '+q.day+' · '+q.domain+' · '+q.ts+' · #'+q.id+'</a>').join('')+'</div></details>'});
  card.innerHTML=h;card.querySelectorAll('.sclinks a').forEach(a=>a.onclick=e=>{e.preventDefault();const q=byId[a.dataset.id];s.view='study';s.domain='all';$('domain').value='all';s.day=q.day;s.index=list().indexOf(q);sel=null;prac=null;newPerm(q);save();render();toQ()});
@@ -82,3 +85,5 @@ V10tab('tabScen','📂 6 Scenario','scen',drawScen);
 const css=document.createElement('style');css.textContent='.scen{border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:10px 0}.scen summary{cursor:pointer}.scen summary small{display:block;margin-top:4px}.scen h4{margin:12px 0 4px}.sclinks{display:flex;flex-wrap:wrap;gap:6px;max-height:240px;overflow:auto}.sclinks a{font-size:13px;border:1px solid var(--line);border-radius:8px;padding:2px 8px;text-decoration:none}.g10{border:1px solid var(--vi);border-radius:14px;padding:10px 14px;margin:10px 0}.g10 summary{cursor:pointer}';document.head.appendChild(css);
 render();
 })();
+
+(function(){const c=document.createElement('style');c.textContent='mark.kw{background:#fde047;color:inherit;padding:0 2px;border-radius:3px;font-style:normal}.kwleg{display:inline-block;font-size:13px;margin:4px 0 8px}';document.head.appendChild(c)})();
