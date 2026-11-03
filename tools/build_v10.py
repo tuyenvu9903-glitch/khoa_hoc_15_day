@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate v10data.js (P1: Exam Guide v1.0 facts, multiple-response items, 6 scenarios, scenario tags)."""
+"""Generate v10data.js (P1: Exam Guide v0.2 facts, multiple-response items, 6 scenarios, scenario tags)."""
 import json,collections,sys,os
 H=os.path.dirname(os.path.abspath(__file__)); ROOT=sys.argv[1] if len(sys.argv)>1 else os.path.join(H,'..')
 exec(open(os.path.join(H,'mr.py'),encoding='utf8').read()); exec(open(os.path.join(H,'scen.py'),encoding='utf8').read()); exec(open(os.path.join(H,'tag.py'),encoding='utf8').read())
@@ -18,12 +18,11 @@ tagm={q['id']:tag(q) for q in Q+[x for v in EX.values() for x in v]}
 for k,v in json.load(open(os.path.join(H,'tag_manual.json'),encoding='utf8')).items():
     if v is None: tagm.pop(int(k),None)
     else: tagm[int(k)]=v
-GUIDE=dict(version='1.0',effective='July 2026',code='CCAR-F',items=60,minutes=120,
-  format='Multiple-choice and multiple-response items; each item states how many responses to select',
-  structure='4 scenarios drawn from a bank of 6',pass_=720,scale='100–1,000',fee='$125 USD',validity='12 months',
-  report='Pass/fail with scaled score (100–1,000), plus percent-correct by domain on the score report',
+GUIDE=dict(version='0.2',effective='30/06/2026',code='CCAR-F',items=60,minutes=120,
+  format='See the official Exam Guide; this practice bank includes single-answer and multiple-response items',
+  structure='4 scenarios drawn from a bank of 6',pass_=720,scale='100–1,000',fee='$125 USD',validity='12 months from the date the credential is awarded',
+  report='Pass or fail; scaled score 100–1,000, minimum passing score 720',
   weights={'D1':27,'D2':18,'D3':20,'D4':20,'D5':15},
-  retake='14 / 30 / 90 days after the 1st / 2nd / 3rd failed attempt; up to 4 attempts per rolling 12 months',
   src='https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf')
 exec(open(os.path.join(H,'twins.py'),encoding='utf8').read())
 import re as _re,itertools as _it

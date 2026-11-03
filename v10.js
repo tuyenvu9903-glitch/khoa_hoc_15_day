@@ -1,4 +1,4 @@
-/* v10 — P1: Exam Guide v1.0, multiple-response, 6 scenarios, scenario-based mock (4 of 6) */
+/* v10 — P1: Exam Guide v0.2, 6 scenarios, scenario-based mock (4 of 6) */
 (function(){
 const V=window.V10;if(!V)return;const G=V.guide,SC=V.sc,SCN={};SC.forEach(x=>SCN[x.id]=x);
 for(const id in V.tag){if(byId[id]&&!byId[id].scenario)byId[id].scenario=V.tag[id]}
@@ -8,7 +8,7 @@ window.V10hl=function(t,S){const e=esc(t);if(!S||!S.hl)return e;const ks=S.hl.ma
 
 const allQ=()=>{const seen=new Set(),o=[];Object.values(byId).forEach(q=>{if(!seen.has(q.id)){seen.add(q.id);o.push(q)}});return o};
 const pool=sid=>allQ().filter(q=>q.scenario===sid);
-// difficulty mix per 15-question scenario block: ~3 multiple-response, ~5 hard, rest standard
+// difficulty mix per 15-question scenario block: ~5 hard, rest standard
 const TW={};(V.twins||[]).forEach((g,i)=>g.forEach(id=>TW[id]=i));window.V10TW=TW;
 // near-duplicate guard: at most one question per twin group in one mock (used = groups already taken by earlier blocks)
 function dedupe(a,used){const seen=new Set(used||[]),o=[];for(const q of a){const g=TW[q.id];if(g!=null){if(seen.has(g))continue;seen.add(g)}o.push(q)}return o}
@@ -17,7 +17,7 @@ function pickBlock(sid,n,used){const p0=shuf(pool(sid)),p=dedupe([...p0.filter(i
  const out=[...M,...hd.slice(0,nHd)];for(const q of st){if(out.length>=n)break;out.push(q)}for(const q of p){if(out.length>=n)break;if(!out.includes(q))out.push(q)}
  return shuf(out).map(q=>q.id)}
 window.V10pick=pickBlock;
-const MODES={v10:{n:4,per:15,ms:120*60000,title:'Đề chuẩn v1.0 · 4/6 scenario · 60 câu / 120 phút'}};
+const MODES={v10:{n:4,per:15,ms:120*60000,title:'Đề chuẩn (Guide v0.2) · 4/6 scenario · 60 câu / 120 phút'}};
 window.V10MODES=MODES;
 const _start=startMock;
 startMock=function(k){if(k&&k.target)k=null;if(k==='rand')k='v10';
@@ -34,7 +34,7 @@ window.scBox=function(q,m){const k=m.ids.indexOf(q.id),sec=secOf(m,k);if(!sec)re
 const scaled=p=>Math.round(100+900*p);
 window.V10scaled=scaled;
 function resultExtra(m){const n=m.ids.length,ok=m.ids.filter(id=>eq(byId[id],m.ans[id])).length,p=n?ok/n:0,sc=scaled(p);
- let h='<div class="card v10res"><h3 style="margin-top:0">🎯 Điểm quy đổi ước lượng: '+sc+' / 1000 '+(sc>=G.pass_?'<span class="ok">≥ 720</span>':'<span class="bad">&lt; 720</span>')+'</h3><p class="muted">⚠️ Chỉ là ước lượng gần đúng: quy đổi tuyến tính 100 + 900 × tỉ lệ đúng. Exam Guide v1.0 chỉ nói điểm được báo trên thang 100–1.000, đậu từ 720 và có quy đổi để cân bằng độ khó giữa các đề — Anthropic không công bố công thức, nên con số này không dự đoán chắc chắn kết quả thật.</p>';
+ let h='<div class="card v10res"><h3 style="margin-top:0">🎯 Điểm quy đổi ước lượng: '+sc+' / 1000 '+(sc>=G.pass_?'<span class="ok">≥ 720</span>':'<span class="bad">&lt; 720</span>')+'</h3><p class="muted">⚠️ Chỉ là ước lượng gần đúng: quy đổi tuyến tính 100 + 900 × tỉ lệ đúng. Exam Guide v0.2 chỉ nói điểm được báo trên thang 100–1.000, đậu từ 720 và có quy đổi để cân bằng độ khó giữa các đề — Anthropic không công bố công thức, nên con số này không dự đoán chắc chắn kết quả thật.</p>';
  if(m.secs&&m.secs.length){h+='<table class="ds"><tr><th>Scenario</th><th>Đúng</th><th>%</th></tr>'+m.secs.map(x=>{const a=m.ids.slice(x.from,x.from+x.n),o=a.filter(id=>eq(byId[id],m.ans[id])).length;return '<tr><td>'+esc(SCN[x.sid].titleEn)+'<span class="vi">'+esc(SCN[x.sid].titleVi)+'</span></td><td>'+o+'/'+a.length+'</td><td>'+Math.round(o/a.length*100)+'%</td></tr>'}).join('')+'</table>'}
  const by={};m.ids.forEach(id=>{const q=byId[id];by[q.domain]=by[q.domain]||[0,0];by[q.domain][1]++;if(eq(q,m.ans[id]))by[q.domain][0]++});
  h+='<p><b>Theo domain</b> (giống score report: % đúng theo domain, không dùng để quyết định đậu/trượt): '+Object.keys(by).sort().map(d=>d+' '+by[d][0]+'/'+by[d][1]+' ('+Math.round(by[d][0]/by[d][1]*100)+'%)').join(' · ')+'</p>';
@@ -44,7 +44,7 @@ const _draw=drawMock;
 drawMock=function(){_draw.apply(this,arguments);const v=$('mockView'),m=s.mock;
  if(!m){const top=document.createElement('div');top.className='v10menu';
   const es=s.examStats||{},st=k=>{const e=es[k];return e&&e.last?'<br><small>Lần gần nhất: '+e.last.ok+'/'+e.last.n+' ('+e.last.pct+'%, ≈'+scaled(e.last.pct/100)+') · '+e.hist.length+' lần</small>':'<br><small class="muted">Chưa thi</small>'};
-  top.innerHTML='<div class="excard v10main"><button class="exstart" id="mockStartV10">🆕 Đề chuẩn v1.0</button> <span class="muted">Rút ngẫu nhiên 4 trong 6 scenario, mỗi scenario 15 câu (≈3 câu chọn nhiều, ≈5 câu khó, còn lại mức chuẩn) · 60 câu / 120 phút</span>'+st('v10')+'</div>';
+  top.innerHTML='<div class="excard v10main"><button class="exstart" id="mockStartV10">🆕 Đề chuẩn (Guide v0.2)</button> <span class="muted">Rút ngẫu nhiên 4 trong 6 scenario, mỗi scenario 15 câu (≈3 câu chọn nhiều, ≈5 câu khó, còn lại mức chuẩn) · 60 câu / 120 phút</span>'+st('v10')+'</div>';
   v.insertBefore(top,v.querySelector('.exlist'));top.querySelector('#mockStartV10').onclick=()=>startMock('v10');}
  else if(m.submitted){const rs=v.querySelector('.res-sticky');if(rs){const d=document.createElement('div');d.innerHTML=resultExtra(m);rs.after(d.firstChild)}}};
 const _sub=submitMock;
@@ -55,7 +55,7 @@ render=function(){_render.apply(this,arguments);try{if((s.view==='study'||s.view
 const css=document.createElement('style');css.textContent='.scbox{border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin:6px 0 10px;background:rgba(15,110,140,.05)}.scbox summary{cursor:pointer}.scbox p{margin:6px 0}.v10menu{margin:8px 0}.v10main{border:2px solid var(--vi)!important}.v10res{margin:12px 0}.v10res .ok{color:#15803d}.v10res .bad{color:#b91c1c}';document.head.appendChild(css);
 render();
 })();
-/* v10 — scenarios tab + Exam Guide v1.0 panel */
+/* v10 — scenarios tab + Exam Guide v0.2 panel */
 (function(){
 const V=window.V10;if(!V)return;const G=V.guide,SC=V.sc,SCN=window.V10SCN;
 const DN={D1:'Agentic Architecture & Orchestration',D2:'Tool Design & MCP Integration',D3:'Claude Code Configuration & Workflows',D4:'Prompt Engineering & Structured Output',D5:'Context Management & Reliability'};
@@ -65,11 +65,11 @@ window.V10tab=function(id,label,view,draw){const tb=document.querySelector('.tab
 const _tabs=tabs;tabs=function(){_tabs.apply(this,arguments);const vs=window.V10views||{};for(const k in vs){const on=s.view===k;vs[k].b.classList.toggle('on',on);vs[k].card.classList.toggle('hidden',!on);if(on)vs[k].draw(vs[k].card)}
  const mine=!!vs[s.view];const lab=$('lab');if(lab)lab.style.display=mine?'none':''};
 function guideHtml(){const w=G.weights;return '<details class="g10" open><summary><b>📘 Exam Guide v'+G.version+' ('+G.effective+') — cấu trúc bài thi</b></summary><table class="ds">'+
- [['Exam code',G.code],['Số câu (items)',G.items],['Dạng câu','Multiple-choice (chọn một) và multiple-response (chọn nhiều); mỗi câu ghi rõ phải chọn bao nhiêu đáp án'],['Cấu trúc','4 scenario rút ngẫu nhiên từ bộ 6 scenario'],['Thời gian',G.minutes+' phút'],['Điểm đậu','Scaled score (điểm quy đổi) 720 trên thang 100–1.000'],['Kết quả','Đậu/trượt + điểm quy đổi, kèm % đúng theo từng domain (% theo domain không dùng để quyết định đậu/trượt)'],['Trọng số','D1 '+w.D1+'% · D2 '+w.D2+'% · D3 '+w.D3+'% · D4 '+w.D4+'% · D5 '+w.D5+'%'],['Lệ phí / hiệu lực',G.fee+' · '+G.validity],['Thi lại','Chờ 14 / 30 / 90 ngày sau lần trượt 1 / 2 / 3; tối đa 4 lần trong 12 tháng']].map(r=>'<tr><td><b>'+r[0]+'</b></td><td>'+esc(String(r[1]))+'</td></tr>').join('')+
- '</table><p class="muted">Nguồn: <a href="'+G.src+'" target="_blank" rel="noopener">Claude Certified Architect – Foundations Exam Guide, Version 1.0</a> (bản PDF công khai). Web này là tài liệu ôn tự biên soạn, không phải đề thật.</p></details>'}
+ [['Exam code',G.code],['Số câu (items)',G.items],['Dạng câu','Xem Exam Guide chính thức (bộ luyện tập gồm câu 1 đáp án và câu chọn nhiều)'],['Cấu trúc','4 scenario rút ngẫu nhiên từ bộ 6 scenario'],['Thời gian',G.minutes+' phút'],['Điểm đậu','Scaled score (điểm quy đổi) 720 trên thang 100–1.000'],['Kết quả','Đậu hoặc trượt; điểm quy đổi 100–1.000, đậu từ 720'],['Trọng số','D1 '+w.D1+'% · D2 '+w.D2+'% · D3 '+w.D3+'% · D4 '+w.D4+'% · D5 '+w.D5+'%'],['Lệ phí / hiệu lực',G.fee+' · '+G.validity],['Quy định thi','Cấm dùng AI trong lúc thi · cấm thêm màn hình, ghi chú, tài liệu · cấm tiết lộ/chia sẻ nội dung đề (Exam Policy)']].map(r=>'<tr><td><b>'+r[0]+'</b></td><td>'+esc(String(r[1]))+'</td></tr>').join('')+
+ '</table><p class="muted">Nguồn: <a href="'+G.src+'" target="_blank" rel="noopener">Claude Certified Architect – Foundations Exam Guide</a> (nội dung đối chiếu theo Version 0.2, cập nhật 30/06/2026) (bản PDF công khai). Web này là tài liệu ôn tự biên soạn, không phải đề thật.</p></details>'}
 window.V10guideHtml=guideHtml;
 function drawScen(card){const st=sid=>{const p=Object.values(byId).filter(q=>q.scenario===sid);const u=[...new Map(p.map(q=>[q.id,q])).values()];return u};
- let h='<h2 style="margin-top:0">📂 6 Scenario của Exam Guide v1.0</h2>'+guideHtml()+'<p class="muted">Đoạn <b>Bối cảnh</b> lấy nguyên văn từ Exam Guide v1.0. Phần <b>Kiến trúc / Yêu cầu / Ràng buộc</b> là minh họa do khóa học tự viết để luyện tư duy, không phải nội dung chính thức.</p><span class="kwleg"><mark class="kw">Vàng</mark> = keyword nên để ý (tool/thành phần, ràng buộc/giới hạn, cụm báo hiệu đề thi)</span>';
+ let h='<h2 style="margin-top:0">📂 6 Scenario của Exam Guide v0.2</h2>'+guideHtml()+'<p class="muted">Đoạn <b>Bối cảnh</b> lấy nguyên văn từ Exam Guide. Phần <b>Kiến trúc / Yêu cầu / Ràng buộc</b> là minh họa do khóa học tự viết để luyện tư duy, không phải nội dung chính thức.</p><span class="kwleg"><mark class="kw">Vàng</mark> = keyword nên để ý (tool/thành phần, ràng buộc/giới hạn, cụm báo hiệu đề thi)</span>';
  SC.forEach((S,k)=>{const qs=st(S.id),inBank=qs.filter(q=>BANK.has(q.id)),by={};qs.forEach(q=>by[q.domain]=(by[q.domain]||0)+1);
   h+='<details class="scen" id="scen_'+S.id+'"><summary><b>Scenario '+(k+1)+': '+esc(S.titleEn)+'</b><span class="vi">'+esc(S.titleVi)+'</span><small class="muted">'+qs.length+' câu liên kết · '+qs.filter(isMulti).length+' câu chọn nhiều · '+qs.filter(q=>q.hard).length+' câu khó · Primary domains: '+S.dom.join(', ')+'</small></summary>'+
   '<h4>Bối cảnh (Exam Guide v1.0)</h4><div class="enblk"><span class="lbadge">EN</span><p>'+V10hl(S.ctxEn,S)+'</p></div><div class="viblk"><span class="lbadge vb">VI</span><p>'+V10hl(S.ctxVi,S)+'</p></div>'+

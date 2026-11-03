@@ -18,7 +18,7 @@ drawStats=function(){_st.apply(this,arguments);const box=$('statsView');if(!box)
  const ks=Object.keys(TS).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
  const rate=r=>{const n=r.n+r.mn,w=(r.n-r.ok)+(r.mn-r.mok);return n?w/n:-1};
  const rows=ks.map(k=>({k,r:R[k]||{n:0,ok:0,g:0,mn:0,mok:0}}));const worst=rows.filter(x=>rate(x.r)>0).sort((a,b)=>rate(b.r)-rate(a.r)).slice(0,5);
- let h='<h2>🎯 Tỉ lệ sai theo task statement (Exam Guide v1.0)</h2><p class="muted">Gộp câu đã chấm khi học + mọi lần thi thử. “Sai” = trả lời sai; câu đúng nhờ đoán được tính riêng.</p>';
+ let h='<h2>🎯 Tỉ lệ sai theo task statement (Exam Guide v0.2)</h2><p class="muted">Gộp câu đã chấm khi học + mọi lần thi thử. “Sai” = trả lời sai; câu đúng nhờ đoán được tính riêng.</p>';
  if(worst.length)h+='<p><b>Cần ôn nhất:</b> '+worst.map(x=>x.k+' ('+Math.round(rate(x.r)*100)+'% sai)').join(' · ')+'</p>';
  h+='<table class="ds tsstat"><tr><th>Task</th><th>Nội dung</th><th>Học: đúng/đã làm</th><th>Đoán</th><th>Thi thử: đúng/câu</th><th>Tỉ lệ sai</th></tr>'+rows.map(({k,r})=>{const e=rate(r);return '<tr><td><b>'+k+'</b></td><td>'+esc(TS[k])+'</td><td>'+r.ok+'/'+r.n+'</td><td>'+r.g+'</td><td>'+r.mok+'/'+r.mn+'</td><td'+(e>=0.4?' class="bad"':'')+'>'+(e<0?'—':Math.round(e*100)+'%')+'</td></tr>'}).join('')+'</table>';
  const d=document.createElement('div');d.className='tsbox';d.innerHTML=h;box.appendChild(d)};
