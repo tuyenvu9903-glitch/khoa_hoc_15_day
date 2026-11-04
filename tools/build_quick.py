@@ -79,6 +79,12 @@ CSS = ('<!--qk--><style>'
        '#notesView .qk-sheet summary::-webkit-details-marker{display:none}#notesView .qk-sheet summary h2{margin:0}'
        '#notesView .qk-sheet h3{font-size:16px;margin:14px 0 6px}#notesView .qk-gen{margin:0 0 12px;padding-left:20px}#notesView .qk-gen li{margin:4px 0}'
        '#notesView .qk-table td:first-child{white-space:nowrap;font-weight:700}'
+       # responsive: 2 cột chỉ khi mỗi thẻ ≥ 420px; thẻ hẹp thì bỏ lề trái 54px
+       '#notesView .nt-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr))}'
+       '#notesView .nt-item{container-type:inline-size}'
+       '@container (max-width:520px){#notesView .nt-body{padding:0 14px 14px 14px;font-size:15px}#notesView .nt-item summary{padding:11px 12px}}'
+       '@media(max-width:480px){#notesView .nt-body{font-size:14.5px;line-height:1.55}#notesView .nt-num{width:26px;height:26px;border-radius:8px}'
+       '#notesView .nt-quick{padding:8px 10px}#notesView .nt-toolbar input{min-width:0;flex-basis:100%}#notesView .nt-toolbar select{flex:1 1 100%}}'
        '</style><!--/qk-->')
 
 JS = ('<!--qk--><script>(function(){var t=document.getElementById("qkSheet");if(!t)return;'
