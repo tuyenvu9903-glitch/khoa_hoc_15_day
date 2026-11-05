@@ -624,3 +624,21 @@ GENERAL = [
     ("Đáp án có \"larger model\" / \"larger context window\" / \"higher max_tokens\"", "Hầu như luôn là bẫy: không xử lý gốc vấn đề."),
     ("Đáp án có \"retry forever\" / \"increase the retry limit\"", "Sai: retry phải có giới hạn; thông tin vắng mặt thì không retry."),
 ]
+
+
+# ---- v2 (review): gộp cặp + 8 cặp mới, rồi đánh số lại theo thứ tự trang ----
+_MERGE = {31: 11, 58: 28, 74: 28, 78: 79, 50: 51}
+for _s, _d in _MERGE.items():
+    _r = QK.pop(_s)
+    QK[_d].setdefault("alt", [])
+    QK[_d]["alt"] = list(QK[_d]["alt"]) + [dict(cue=_r["cue"], pick=_r["pick"], avoid=_r["avoid"], tip=_r["tip"])] + list(_r.get("alt", []))
+QK['A'] = dict(**{'cue': ['transient failure in a subagent', 'brief timeout'], 'pick': ['recover locally'], 'avoid': ['Report every error'], 'tip': 'Lỗi tạm thời ở subagent → tự phục hồi cục bộ (retry có giới hạn / đổi cách), không đẩy ngay lên coordinator.'})
+QK['B'] = dict(**{'cue': ['sources were unavailable', 'never became available'], 'pick': ['coverage annotation'], 'avoid': ['as complete', 'silently'], 'tip': 'Báo cáo thiếu nguồn → thêm coverage annotation nói rõ thiếu gì, đừng trình bày như đã đủ.'})
+QK['C'] = dict(**{'cue': ['results have gaps', 'leave a gap'], 'pick': ['re-delegate'], 'avoid': ['infer', 'Drop the'], 'tip': 'Kết quả subagent có lỗ hổng → coordinator đánh giá lại và giao thêm việc lấp đúng lỗ hổng.'})
+QK['D'] = dict(**{'cue': ['instead of the MCP', 'ignores the MCP'], 'pick': ['description'], 'avoid': ['Disable', 'ALWAYS'], 'tip': 'Agent bỏ qua MCP tool, dùng Grep → sửa description của MCP tool cho rõ khi nào và vì sao dùng nó.'})
+QK['E'] = dict(**{'cue': ['request is underspecified', 'unclear requirements'], 'pick': ['clarifying questions'], 'avoid': [], 'tip': 'Yêu cầu mơ hồ → interview pattern: Claude hỏi làm rõ trước khi chạy.', 'alt': [{'cue': ['independent issue'], 'pick': ['sequentially'], 'avoid': [], 'tip': 'Lỗi tương tác → gửi chung một message; lỗi độc lập → sửa tuần tự từng cái.'}]})
+QK['F'] = dict(**{'cue': ['spread across many directories'], 'pick': ['paths'], 'avoid': [], 'tip': 'Quy ước theo loại file rải nhiều thư mục → .claude/rules có paths glob.', 'alt': [{'cue': ['only to the legacy/'], 'pick': ['when Claude reads files in that directory'], 'avoid': [], 'tip': 'Quy ước cho một thư mục → CLAUDE.md trong thư mục đó, nạp khi Claude đọc file ở đó.'}]})
+QK['G'] = dict(**{'cue': ['swamps the main session'], 'pick': ['summary'], 'avoid': [], 'tip': 'Subagent trả output dài → chỉ trả summary về main session, chi tiết để ở file/subagent.'})
+QK['H'] = dict(**{'cue': ['every finding to', 'hundreds of findings'], 'pick': ['calibrated'], 'avoid': [], 'tip': 'Nhiều findings → route theo confidence đã calibrate trên labeled validation set.'})
+_ORDER = [1, 2, 3, 4, 5, 6, 7, 'C', 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 33, 34, 35, 'D', 36, 37, 38, 39, 40, 41, 42, 43, 'F', 44, 45, 46, 'E', 47, 48, 49, 51, 52, 53, 54, 55, 56, 57, 59, 60, 61, 62, 63, 'H', 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 75, 'A', 'B', 76, 77, 'G', 79, 80, 81, 82]
+QK = {_i + 1: QK[_k] for _i, _k in enumerate(_ORDER)}
