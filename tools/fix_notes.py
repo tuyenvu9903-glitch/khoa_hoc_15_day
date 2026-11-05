@@ -11,7 +11,7 @@ import json, os, re, sys
 H = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.join(H, '..'); sys.path.insert(0, H)
 import check_quick as C
 from quick_keys import QK
-MANUAL = {19: [1022, 1012], 64: [2064, 7502], 66: [], 67: []}
+MANUAL = {20: [1022, 1012], 66: [2064, 7502], 68: [], 69: []}
 P = os.path.join(ROOT, 'index.html'); h = open(P, encoding='utf8').read()
 Q = json.loads(re.search(r'<script>const Q=(\[.*?\]);', h, re.S).group(1))
 v = open(os.path.join(ROOT, 'v10data.js'), encoding='utf8').read()
