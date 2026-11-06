@@ -54,9 +54,26 @@ async function exam(browser, mode, viewport) {
   return ctx;
 }
 
+// A saved in-progress exam that still holds a retired question ID must be dropped, not crash the page.
+async function staleExam(browser) {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+  await page.route(/^https?:/, (route) => route.abort());
+  await page.goto(FILE);
+  await page.evaluate(() => { s.view = 'mock'; s.mock = { k: '4', ids: [90409, 90461], ans: { 90409: 1 }, perm: {}, flags: {}, i: 0, start: Date.now(), submitted: false }; save(); });
+  await page.reload();
+  const mock = await page.evaluate(() => s.mock);
+  if (mock || errors.length) throw new Error(`stale exam kept: ${JSON.stringify(mock)} ${errors.join(' | ')}`);
+  await context.close();
+  return 'stale exam dropped';
+}
+
 (async () => {
   const browser = await chromium.launch();
   try {
+    console.log('ok', await staleExam(browser));
     for (const viewport of VIEWS) for (const mode of MODES) console.log('ok', await exam(browser, mode, viewport));
   } finally { await browser.close(); }
 })().catch((e) => { console.error(e.message); process.exit(1); });

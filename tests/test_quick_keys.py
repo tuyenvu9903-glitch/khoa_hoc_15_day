@@ -12,7 +12,7 @@ class QuickKeys(unittest.TestCase):
         cls.allq, _ = cq.load()
 
     def test_every_pair_has_keys(self):
-        self.assertEqual(sorted(cq.QK), list(range(1, 83)))
+        self.assertEqual(sorted(cq.QK), list(range(1, 86)))
         for k, r in cq.QK.items():
             for rule in cq.rules(k):
                 self.assertTrue(rule['cue'] and rule['pick'] and rule['tip'], k)
@@ -33,7 +33,7 @@ class QuickKeys(unittest.TestCase):
     def test_inserted_into_page(self):
         with open(os.path.join(R, 'index.html'), encoding='utf8') as f:
             h = f.read()
-        self.assertEqual(h.count('class="nt-quick"'), 82)
+        self.assertEqual(h.count('class="nt-quick"'), 85)
         self.assertEqual(h.count('id="qkSheet"'), 1)
 
 

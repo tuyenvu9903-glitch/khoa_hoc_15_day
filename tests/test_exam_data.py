@@ -50,5 +50,18 @@ class ExamData(unittest.TestCase):
             self.assertFalse({p.lower() for p in hl} & GENERIC, (q['id'], hl))
 
 
+    def test_rewritten_exam4_questions_are_new(self):
+        ids = {q['id'] for q in self.ALL}
+        retired = {90401, 90403, 90404, 90409, 90410, 90412, 90428, 90431, 90434, 90437, 90438, 90441, 90445, 90450, 90452, 90455}
+        new = set(range(90461, 90477))
+        self.assertFalse(ids & retired)
+        self.assertLessEqual(new, ids)
+        twins = {i for g in self.V['twins'] for i in g}
+        self.assertFalse(twins & (retired | new), 'twin list still holds retired IDs or marks a new question as a duplicate')
+        exam = {q['id']: k for k, qs in self.EX.items() for q in qs}
+        shared = [g for g in self.V['twins'] if {'1', '4'} <= {exam.get(i) for i in g}]
+        self.assertLessEqual(len(shared), 4, shared)
+
+
 if __name__ == '__main__':
     unittest.main()
