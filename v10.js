@@ -30,7 +30,7 @@ startMock=function(k){if(k&&k.target)k=null;if(k==='rand')k='v10';
 function toTop(){try{scrollTo(0,0)}catch(e){}}
 const secOf=(m,i)=>(m.secs||[]).find(x=>i>=x.from&&i<x.from+x.n);
 window.scBox=function(q,m){const k=m.ids.indexOf(q.id),sec=secOf(m,k);if(!sec)return '';const S=SCN[sec.sid],no=m.secs.indexOf(sec)+1,first=k===sec.from;
- return '<details class="scbox"'+(first?' open':'')+'><summary>📂 Scenario '+no+'/'+m.secs.length+': <b>'+esc(S.titleEn)+'</b> · câu '+(k-sec.from+1)+'/'+sec.n+'</summary><p>'+V10hl(S.ctxEn,S)+'</p>'+(s.mode==='en'?'':'<p class="vi">'+V10hl(S.ctxVi,S)+'</p>')+'</details>'};
+ return '<details class="scbox"'+(first?' open':'')+'><summary>📂 Scenario '+no+'/'+m.secs.length+': <b>'+esc(S.titleEn)+'</b> · '+(ptLocked()?'question ':'câu ')+(k-sec.from+1)+'/'+sec.n+'</summary><p>'+V10hl(S.ctxEn,S)+'</p>'+(s.mode==='en'||ptLocked()?'':'<p class="vi">'+V10hl(S.ctxVi,S)+'</p>')+'</details>'};
 const scaled=p=>Math.round(100+900*p);
 window.V10scaled=scaled;
 function resultExtra(m){const n=m.ids.length,ok=m.ids.filter(id=>eq(byId[id],m.ans[id])).length,p=n?ok/n:0,sc=scaled(p);
