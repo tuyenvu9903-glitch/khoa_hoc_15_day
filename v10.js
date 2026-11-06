@@ -44,7 +44,7 @@ const _draw=drawMock;
 drawMock=function(){_draw.apply(this,arguments);const v=$('mockView'),m=s.mock;
  if(!m){const top=document.createElement('div');top.className='v10menu';
   const es=s.examStats||{},st=k=>{const e=es[k];return e&&e.last?'<br><small>Lần gần nhất: '+e.last.ok+'/'+e.last.n+' ('+e.last.pct+'%, ≈'+scaled(e.last.pct/100)+') · '+e.hist.length+' lần</small>':'<br><small class="muted">Chưa thi</small>'};
-  top.innerHTML='<div class="excard v10main"><button class="exstart" id="mockStartV10">🆕 Đề chuẩn v1.0</button> <span class="muted">Rút ngẫu nhiên 4 trong 6 scenario, mỗi scenario 15 câu (≈3 câu chọn nhiều, ≈5 câu khó, còn lại mức chuẩn) · 60 câu / 120 phút</span>'+st('v10')+'</div>';
+  top.innerHTML='<div class="excard v10main"><button class="exstart" id="mockStartV10">🎯 Đề chuẩn v1.0 · 4/6 scenario</button> <b>Thước đo chính, mốc ≥80% ở lần làm đầu tiên.</b> <span class="muted">Rút ngẫu nhiên 4 trong 6 scenario, mỗi scenario 15 câu (≈3 câu chọn nhiều, ≈5 câu khó, còn lại mức chuẩn) · 60 câu / 120 phút</span>'+st('v10')+'</div>';
   v.insertBefore(top,v.querySelector('.exlist'));top.querySelector('#mockStartV10').onclick=()=>startMock('v10');}
  else if(m.submitted){const rs=v.querySelector('.res-sticky');if(rs){const d=document.createElement('div');d.innerHTML=resultExtra(m);rs.after(d.firstChild)}}};
 const _sub=submitMock;
