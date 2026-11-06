@@ -16,4 +16,9 @@ class MockModes(unittest.TestCase):
         h=rd('index.html')
         for k in ('id="qmSubmit"','function goQ','class="mq"'):self.assertIn(k,h)
         for k in ('id="mPrev"','id="mNext"','id="mSubmit"'):self.assertNotIn(k,h)
+    def test_standard_mode_is_the_main_yardstick(self):
+        h=rd('index.html');j=rd('v10.js')
+        head=h[h.index('<header>'):h.index('</header>')]
+        for k in ('Đề chuẩn v1.0 · 4/6 scenario','≥80%','luyện theo domain'):self.assertIn(k,head)
+        self.assertIn('thước đo chính',h);self.assertIn('Thước đo chính',j)
 if __name__=='__main__':unittest.main()

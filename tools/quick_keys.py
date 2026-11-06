@@ -298,8 +298,8 @@ QK = {
                    pick=["When Claude reads files in packages/api", "CLAUDE.md in each subdirectory"],
                    avoid=["imports it with @", "launched from inside", "replacing the root", "~/.claude/CLAUDE.md", "two clearly titled sections"],
                    tip="CLAUDE.md ở thư mục con được nạp thêm khi Claude làm việc trong thư mục đó; quy ước riêng từng phần → đặt CLAUDE.md ở từng thư mục."),
-               dict(cue=["'@docs/"],
-                   pick=["Imports"],
+               dict(cue=["'@docs/", "shared standards files"],
+                   pick=["Imports", "@import"],
                    avoid=["no effect", "teammate named", "hyperlink"],
                    tip="Dòng @path trong CLAUDE.md = import nội dung file đó vào memory.")]),
 39: dict(cue=["~/.claude/CLAUDE.md", "new teammate", "new hire", "ignores the team's", "other developers ignore"],
@@ -347,7 +347,7 @@ QK = {
                    avoid=["ignored unless", "are removed", "only the listed tools exist", "only works for subagents", "must be lowercase", "Glob should also"],
                    tip="allowed-tools chỉ DUYỆT TRƯỚC tool được liệt kê, KHÔNG chặn tool khác. Muốn chặn → disallowed-tools hoặc luật deny."),
                dict(cue=["very verbose codebase analysis and needs one argument"],
-                   pick=["context: fork", "disallowed-tools", "argument-hint prompts"],
+                   pick=["context: fork", "disallowed-tools", "argument-hint shows"],
                    avoid=["shared with the whole team", "guarantees the skill can never"],
                    tip="Skill dài dòng + cần tham số → context: fork, argument-hint; muốn cấm tool → disallowed-tools.")]),
 43: dict(cue=["spread across", "many directories", "many folders", "regardless of directory", "wherever they are", "many service folders", "next to source files"],
@@ -374,7 +374,7 @@ QK = {
           pick=["Plan mode", "plan mode"],
           avoid=["-p so it finishes", "Direct execution was fine", "Start direct execution", "direct execution with auto-accept", "Plan mode, since every", "plan mode only when", "Always use plan mode", "Keep plan mode for everything", "Ban plan mode"],
           tip="Nhiều file + nhiều cách làm / quyết định kiến trúc → plan mode trước, rồi mới thực thi.",
-          alt=[dict(cue=["typo", "single null check", "in one function", "clear stack trace", "plan mode for every change"],
+          alt=[dict(cue=["typo", "single null check", "in one function", "clear stack trace", "plan mode for every change", "staying in plan mode"],
                    pick=["Direct execution", "direct execution"],
                    avoid=["Plan mode, since every", "plan mode only when", "Always use plan mode", "Keep plan mode for everything", "Ban plan mode", "Plan mode, then", "Plan mode with", "Spawn an Explore", "only when CI fails"],
                    tip="Thay đổi nhỏ, rõ ràng (typo, một null check có stack trace) → direct execution; plan mode cho việc lớn/mơ hồ."),
@@ -642,3 +642,16 @@ QK['G'] = dict(**{'cue': ['swamps the main session'], 'pick': ['summary'], 'avoi
 QK['H'] = dict(**{'cue': ['every finding to', 'hundreds of findings'], 'pick': ['calibrated'], 'avoid': [], 'tip': 'Nhiều findings → route theo confidence đã calibrate trên labeled validation set.'})
 _ORDER = [1, 2, 3, 4, 5, 6, 7, 'C', 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 33, 34, 35, 'D', 36, 37, 38, 39, 40, 41, 42, 43, 'F', 44, 45, 46, 'E', 47, 48, 49, 51, 52, 53, 54, 55, 56, 57, 59, 60, 61, 62, 63, 'H', 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 75, 'A', 'B', 76, 77, 'G', 79, 80, 81, 82]
 QK = {_i + 1: QK[_k] for _i, _k in enumerate(_ORDER)}
+
+
+# ---- v3: cue cho các câu Đề 4 viết lại (đánh số theo thứ tự trang ở trên) ----
+def _alt(k, cue, pick, avoid, tip):
+    QK[k]["alt"] = list(QK[k].get("alt", [])) + [dict(cue=cue, pick=pick, avoid=avoid, tip=tip)]
+
+
+_alt(43, ["/migrate-table"], ["argument-hint"], ["context: fork", "allowed-tools,"],
+     "Skill cần tham số → argument-hint hiện tham số cần có trong autocomplete; nó không kiểm tra tham số.")
+_alt(75, ["I'm really annoyed"], ["Acknowledge"], ["Escalate at once", "rate their frustration"],
+     "Khách bực nhưng chưa đòi gặp người và việc trong khả năng agent → ghi nhận rồi xử lý; chỉ escalate nếu khách đòi.")
+_alt(84, ["only the headline numbers"], ["metadata"], ["rank their own"],
+     "Bước tổng hợp cần metadata (ngày, nguồn, phương pháp) từ subagent để cân nhắc bằng chứng.")
