@@ -82,5 +82,13 @@ class ExamData(unittest.TestCase):
                 self.assertFalse([b for b in banned if b in option.lower()], (q['id'], option))
 
 
+    def test_stems_do_not_point_at_the_guide(self):
+        for q in self.ALL + self.V['mr']:
+            for text in (q['qEn'], q['qVi']):
+                self.assertNotRegex(text, r'(?i)exam guide|the exam expects|đề thi muốn', q['id'])
+        crash = next(q for q in self.ALL if q['id'] == 90160)
+        self.assertEqual((crash['ts'], crash['kw']), ('5.4', 'Guide 5.4'))
+
+
 if __name__ == '__main__':
     unittest.main()
