@@ -1,7 +1,9 @@
 """Data checks for the four fixed mock exams (EX in index.html) and the multiple-response bank (tools/mr.py data)."""
-import json, os, re, unittest
+import json, os, re, sys, unittest
 
 R = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(R, 'tools'))
+import exam_audit  # noqa: E402
 
 
 def load():
@@ -61,6 +63,23 @@ class ExamData(unittest.TestCase):
         exam = {q['id']: k for k, qs in self.EX.items() for q in qs}
         shared = [g for g in self.V['twins'] if {'1', '4'} <= {exam.get(i) for i in g}]
         self.assertLessEqual(len(shared), 4, shared)
+
+
+    def test_no_length_or_absolute_word_giveaway(self):
+        for name, qs in (('exams', self.ALL), ('multiple-response', self.V['mr'])):
+            m = exam_audit.metrics(qs)
+            self.assertTrue(20 <= m['shortest_pct'] <= 30, (name, m))
+            self.assertLessEqual(m['gap'], 5, (name, m))
+        self.assertLessEqual(exam_audit.metrics(self.ALL)['longest_pct'], 35)
+
+    def test_no_implausible_or_padded_options(self):
+        banned = ('teammate named', 'restart their computer', "start with 'a'", 'all the same name', 'half the rules',
+                  'reinstall claude code', 'consistent and predictable', 'consistent and scannable', 'on the same channel')
+        for q in self.ALL + self.V['mr']:
+            self.assertEqual(len(q['optionsEn']), len(q['optionsVi']), q['id'])
+            self.assertEqual(len(set(q['optionsEn'])), len(q['optionsEn']), q['id'])
+            for option in q['optionsEn']:
+                self.assertFalse([b for b in banned if b in option.lower()], (q['id'], option))
 
 
 if __name__ == '__main__':
