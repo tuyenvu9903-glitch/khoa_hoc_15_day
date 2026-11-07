@@ -40,8 +40,14 @@ class ExamData(unittest.TestCase):
             self.assertEqual(len(qs), 60, k)
             domains = {d: sum(q['domain'] == d for q in qs) for d in ('D1', 'D2', 'D3', 'D4', 'D5')}
             self.assertEqual(domains, {'D1': 16, 'D2': 11, 'D3': 12, 'D4': 12, 'D5': 9}, k)
-            letters = [sum(q['correct'] == i for q in qs) for i in range(4)]
-            self.assertEqual(letters, [15, 15, 15, 15], k)
+            multi = [q for q in qs if isinstance(q['correct'], list)]
+            singles = [q for q in qs if not isinstance(q['correct'], list)]
+            self.assertEqual(len(multi), 4, k)
+            self.assertTrue(all(q.get('multi') and 2 <= len(q['correct']) <= 3 for q in multi), k)
+            self.assertTrue(all(f"Choose {len(q['correct'])}" in q['qEn'] for q in multi), k)
+            self.assertTrue(all(f"Chọn {len(q['correct'])}" in q['qVi'] for q in multi), k)
+            letters = [sum(q['correct'] == i for q in singles) for i in range(4)]
+            self.assertEqual(letters, [14, 14, 14, 14], k)
 
     def test_highlights_are_one_or_two_decisive_phrases_in_the_stem(self):
         for q in self.ALL:
